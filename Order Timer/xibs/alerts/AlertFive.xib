@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="ipad10_5" orientation="landscape">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="AlertFive" customModule="Order_Timer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="1112" height="834"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NuF-7p-okz" customClass="CornerView" customModule="Order_Timer" customModuleProvider="target">
+                    <rect key="frame" x="371" y="317" width="371" height="220"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o5s-p9-ZTl">
+                            <rect key="frame" x="10" y="20" width="351" height="0.0"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S9R-CL-nw5" customClass="ButtonCornerView" customModule="Order_Timer" customModuleProvider="target">
+                            <rect key="frame" x="9.5" y="40" width="351" height="50"/>
+                            <color key="backgroundColor" red="0.058823529409999999" green="0.058823529409999999" blue="0.058823529409999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="50" id="Eu0-jx-qNy"/>
+                            </constraints>
+                            <state key="normal" title="Продлил заказ">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                    <real key="value" value="5"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="btnNextClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="kfE-4O-ZDh"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QKn-Al-B4C" customClass="ButtonCornerView" customModule="Order_Timer" customModuleProvider="target">
+                            <rect key="frame" x="9.5" y="100" width="351" height="50"/>
+                            <color key="backgroundColor" red="0.058823529409999999" green="0.058823529409999999" blue="0.058823529409999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="50" id="5KD-KS-xKl"/>
+                            </constraints>
+                            <state key="normal" title="Попросил поменять">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                    <real key="value" value="5"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="btnRestartClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="rdm-6V-eOX"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xzn-A7-EIN" customClass="ButtonCornerView" customModule="Order_Timer" customModuleProvider="target">
+                            <rect key="frame" x="9.5" y="160" width="351" height="50"/>
+                            <color key="backgroundColor" red="0.058823529409999999" green="0.058823529409999999" blue="0.058823529409999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="50" id="0la-U7-ZUq"/>
+                            </constraints>
+                            <state key="normal" title="Отменил заказ">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                    <real key="value" value="5"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="btnEndClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="Xpc-dG-dIb"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" red="0.098039215686274508" green="0.098039215686274508" blue="0.098039215686274508" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstItem="xzn-A7-EIN" firstAttribute="top" secondItem="QKn-Al-B4C" secondAttribute="bottom" constant="10" id="7Lv-gu-gBi"/>
+                        <constraint firstAttribute="bottom" secondItem="xzn-A7-EIN" secondAttribute="bottom" constant="10" id="8ie-gX-gch"/>
+                        <constraint firstItem="QKn-Al-B4C" firstAttribute="centerX" secondItem="NuF-7p-okz" secondAttribute="centerX" id="BVK-fZ-vCY"/>
+                        <constraint firstItem="S9R-CL-nw5" firstAttribute="width" secondItem="o5s-p9-ZTl" secondAttribute="width" id="QPB-gO-fOf"/>
+                        <constraint firstItem="QKn-Al-B4C" firstAttribute="width" secondItem="o5s-p9-ZTl" secondAttribute="width" id="Vgk-Y4-YZK"/>
+                        <constraint firstItem="S9R-CL-nw5" firstAttribute="top" secondItem="o5s-p9-ZTl" secondAttribute="bottom" constant="20" id="ahl-eW-2VI"/>
+                        <constraint firstItem="o5s-p9-ZTl" firstAttribute="top" secondItem="NuF-7p-okz" secondAttribute="top" constant="20" id="brU-94-Zrd"/>
+                        <constraint firstItem="xzn-A7-EIN" firstAttribute="centerX" secondItem="NuF-7p-okz" secondAttribute="centerX" id="hGH-te-mOX"/>
+                        <constraint firstItem="xzn-A7-EIN" firstAttribute="width" secondItem="o5s-p9-ZTl" secondAttribute="width" id="i1h-UA-Vj9"/>
+                        <constraint firstItem="S9R-CL-nw5" firstAttribute="centerX" secondItem="NuF-7p-okz" secondAttribute="centerX" id="jhr-nd-sQA"/>
+                        <constraint firstItem="o5s-p9-ZTl" firstAttribute="leading" secondItem="NuF-7p-okz" secondAttribute="leading" constant="10" id="rJo-Jr-H2l"/>
+                        <constraint firstItem="QKn-Al-B4C" firstAttribute="top" secondItem="S9R-CL-nw5" secondAttribute="bottom" constant="10" id="rrd-Um-ska"/>
+                        <constraint firstAttribute="trailing" secondItem="o5s-p9-ZTl" secondAttribute="trailing" constant="10" id="y42-Za-3Fi"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="5"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.80000000000000004" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="NuF-7p-okz" firstAttribute="centerY" secondItem="vUN-kp-3ea" secondAttribute="centerY" id="mmG-Mr-7if"/>
+                <constraint firstItem="NuF-7p-okz" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="uuc-dK-Grc"/>
+                <constraint firstItem="NuF-7p-okz" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" multiplier="1:3" id="vf2-vR-ufR"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="btnOne" destination="S9R-CL-nw5" id="P90-ER-fZJ"/>
+                <outlet property="btnThree" destination="xzn-A7-EIN" id="6qp-un-F1q"/>
+                <outlet property="btnTwo" destination="QKn-Al-B4C" id="6t6-Dj-EBC"/>
+                <outlet property="labelInfo" destination="o5s-p9-ZTl" id="yvf-lL-xeA"/>
+            </connections>
+        </view>
+    </objects>
+</document>

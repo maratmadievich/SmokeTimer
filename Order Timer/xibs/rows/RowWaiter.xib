@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="landscape">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="TVCWaiter" customModule="Hookah_Timer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="538" height="70"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bwm-fb-ms7" customClass="CornerView" customModule="Hookah_Timer" customModuleProvider="target">
+                    <rect key="frame" x="10" y="5" width="518" height="60"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PeH-En-aW9">
+                            <rect key="frame" x="10" y="-0.5" width="508" height="60"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" red="0.058823529409999999" green="0.058823529409999999" blue="0.058823529409999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstItem="PeH-En-aW9" firstAttribute="centerY" secondItem="Bwm-fb-ms7" secondAttribute="centerY" id="4ay-RK-uje"/>
+                        <constraint firstItem="PeH-En-aW9" firstAttribute="height" secondItem="Bwm-fb-ms7" secondAttribute="height" id="BEv-5W-FFd"/>
+                        <constraint firstAttribute="trailing" secondItem="PeH-En-aW9" secondAttribute="trailing" id="IEC-iL-rV9"/>
+                        <constraint firstItem="PeH-En-aW9" firstAttribute="leading" secondItem="Bwm-fb-ms7" secondAttribute="leading" constant="10" id="J3G-Ka-a1P"/>
+                        <constraint firstAttribute="height" constant="60" id="OtZ-t9-nfV"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="5"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="Bwm-fb-ms7" secondAttribute="trailing" constant="10" id="4dH-Jw-vdl"/>
+                <constraint firstItem="Bwm-fb-ms7" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="9bT-nA-YeA"/>
+                <constraint firstItem="Bwm-fb-ms7" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="5" id="Gfe-GH-gwO"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="Bwm-fb-ms7" secondAttribute="bottom" constant="5" id="IcR-hX-fBE"/>
+                <constraint firstItem="Bwm-fb-ms7" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="PPg-Z6-QEp"/>
+                <constraint firstItem="Bwm-fb-ms7" firstAttribute="centerY" secondItem="vUN-kp-3ea" secondAttribute="centerY" id="UVu-GB-WFk"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="labelName" destination="PeH-En-aW9" id="wcN-Dy-jx4"/>
+                <outlet property="viewMain" destination="Bwm-fb-ms7" id="CIP-4f-xLl"/>
+            </connections>
+            <point key="canvasLocation" x="-31" y="-39"/>
+        </view>
+    </objects>
+</document>

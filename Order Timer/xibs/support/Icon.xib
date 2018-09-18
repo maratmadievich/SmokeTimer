@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="IconView" customModule="Hookah_Timer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <webView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Aqq-Kv-kPO">
+                    <rect key="frame" x="0.0" y="10" width="375" height="667"/>
+                    <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                </webView>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="Aqq-Kv-kPO" firstAttribute="height" secondItem="iN0-l3-epB" secondAttribute="height" id="F0P-e8-a80"/>
+                <constraint firstItem="Aqq-Kv-kPO" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="FqE-nB-kRv"/>
+                <constraint firstItem="Aqq-Kv-kPO" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="Szh-Q9-zHR"/>
+                <constraint firstItem="Aqq-Kv-kPO" firstAttribute="centerY" secondItem="vUN-kp-3ea" secondAttribute="centerY" id="Xvq-f9-6j9"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="webView" destination="Aqq-Kv-kPO" id="8Mg-fO-PqO"/>
+            </connections>
+        </view>
+    </objects>
+</document>

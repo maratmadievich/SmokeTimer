@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="NewTableView" customModule="Hookah_Timer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="180" height="180"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tdb-pr-YU5" customClass="CornerView" customModule="Hookah_Timer" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="30" width="150" height="150"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u2d-5m-OzQ">
+                            <rect key="frame" x="0.0" y="0.5" width="150" height="150"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1dm-1A-AQN">
+                            <rect key="frame" x="22" y="90" width="107" height="30"/>
+                            <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" red="0.058823529411764705" green="0.058823529411764705" blue="0.058823529411764705" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstItem="u2d-5m-OzQ" firstAttribute="width" secondItem="tdb-pr-YU5" secondAttribute="width" id="HCB-os-n5h"/>
+                        <constraint firstItem="u2d-5m-OzQ" firstAttribute="centerX" secondItem="tdb-pr-YU5" secondAttribute="centerX" id="L5v-Ue-LEf"/>
+                        <constraint firstItem="1dm-1A-AQN" firstAttribute="height" secondItem="tdb-pr-YU5" secondAttribute="height" multiplier="1:5" id="bxc-fv-iuk"/>
+                        <constraint firstItem="u2d-5m-OzQ" firstAttribute="height" secondItem="tdb-pr-YU5" secondAttribute="height" id="eYV-6a-N78"/>
+                        <constraint firstItem="1dm-1A-AQN" firstAttribute="width" secondItem="tdb-pr-YU5" secondAttribute="width" multiplier="5:7" id="gzA-sz-a6L"/>
+                        <constraint firstItem="u2d-5m-OzQ" firstAttribute="centerY" secondItem="tdb-pr-YU5" secondAttribute="centerY" id="iMp-fD-x2u"/>
+                        <constraint firstItem="1dm-1A-AQN" firstAttribute="centerY" secondItem="tdb-pr-YU5" secondAttribute="centerY" multiplier="7:5" id="wuQ-Ed-GwY"/>
+                        <constraint firstItem="1dm-1A-AQN" firstAttribute="centerX" secondItem="tdb-pr-YU5" secondAttribute="centerX" id="zA5-rg-gpH"/>
+                    </constraints>
+                </view>
+                <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Br5-FT-w31" customClass="CornerView" customModule="Hookah_Timer" customModuleProvider="target">
+                    <rect key="frame" x="130.5" y="0.0" width="50" height="50"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wz4-3X-kcG">
+                            <rect key="frame" x="0.0" y="12.5" width="50" height="25"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" red="0.058823529411764705" green="0.058823529411764705" blue="0.058823529411764705" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstItem="Wz4-3X-kcG" firstAttribute="width" secondItem="Br5-FT-w31" secondAttribute="width" id="IAi-ju-cSM"/>
+                        <constraint firstAttribute="width" constant="50" id="MX0-fA-MzG"/>
+                        <constraint firstAttribute="height" constant="50" id="hQO-XS-r9i"/>
+                        <constraint firstItem="Wz4-3X-kcG" firstAttribute="centerY" secondItem="Br5-FT-w31" secondAttribute="centerY" id="rDo-Wr-ezS"/>
+                        <constraint firstItem="Wz4-3X-kcG" firstAttribute="centerX" secondItem="Br5-FT-w31" secondAttribute="centerX" id="v88-yw-boH"/>
+                        <constraint firstItem="Wz4-3X-kcG" firstAttribute="height" secondItem="Br5-FT-w31" secondAttribute="height" multiplier="1:2" id="wPn-Xy-Jng"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="25"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="tdb-pr-YU5" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="30" id="8jC-wf-Fjp"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="Br5-FT-w31" secondAttribute="trailing" id="JiV-z6-XAA"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="tdb-pr-YU5" secondAttribute="bottom" id="VUc-d7-O0B"/>
+                <constraint firstItem="tdb-pr-YU5" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="Wgg-l4-9bX"/>
+                <constraint firstItem="Br5-FT-w31" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" id="mQT-re-cnf"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="tdb-pr-YU5" secondAttribute="trailing" constant="30" id="myw-ia-fuJ"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="labelOrderCount" destination="Wz4-3X-kcG" id="j32-L7-fZH"/>
+                <outlet property="labelTableName" destination="1dm-1A-AQN" id="Fee-Ij-fVP"/>
+                <outlet property="labelTimer" destination="u2d-5m-OzQ" id="D2n-Qp-BtD"/>
+                <outlet property="order" destination="Br5-FT-w31" id="6SB-jZ-cgd"/>
+                <outlet property="orderHeightConstraint" destination="hQO-XS-r9i" id="H7Q-f3-xME"/>
+                <outlet property="orderWidthConstraint" destination="MX0-fA-MzG" id="AHa-ak-wLN"/>
+                <outlet property="table" destination="tdb-pr-YU5" id="Hml-1y-sML"/>
+            </connections>
+            <point key="canvasLocation" x="19.5" y="27"/>
+        </view>
+    </objects>
+</document>

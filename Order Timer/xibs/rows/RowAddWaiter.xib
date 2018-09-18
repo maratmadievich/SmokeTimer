@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="ipad12_9" orientation="landscape">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="TVCAddWaiter" customModule="Hookah_Timer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="818" height="80"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xvE-1A-89n">
+                    <rect key="frame" x="10" y="15" width="798" height="70"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MEm-8J-5ht" customClass="CornerView" customModule="Hookah_Timer" customModuleProvider="target">
+                            <rect key="frame" x="369" y="5" width="60" height="60"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dfA-Br-OTm">
+                                    <rect key="frame" x="0.0" y="-3" width="60" height="60"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="40"/>
+                                    <state key="normal" title="+">
+                                        <color key="titleColor" red="0.098039215686274508" green="0.098039215686274508" blue="0.098039215686274508" alpha="1" colorSpace="calibratedRGB"/>
+                                    </state>
+                                    <connections>
+                                        <action selector="btnAddWaiterClicked:" destination="iN0-l3-epB" eventType="touchUpInside" id="k90-tl-CbU"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                            <color key="backgroundColor" red="0.058823529411764705" green="0.058823529411764705" blue="0.058823529411764705" alpha="1" colorSpace="calibratedRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="60" id="N4Q-OJ-OrU"/>
+                                <constraint firstItem="dfA-Br-OTm" firstAttribute="height" secondItem="MEm-8J-5ht" secondAttribute="height" id="Z40-pO-X34"/>
+                                <constraint firstAttribute="width" constant="60" id="jTh-kS-ve7"/>
+                                <constraint firstItem="dfA-Br-OTm" firstAttribute="width" secondItem="MEm-8J-5ht" secondAttribute="width" id="jb6-Vb-lDa"/>
+                                <constraint firstItem="dfA-Br-OTm" firstAttribute="centerX" secondItem="MEm-8J-5ht" secondAttribute="centerX" id="p2r-mU-nDM"/>
+                                <constraint firstItem="dfA-Br-OTm" firstAttribute="centerY" secondItem="MEm-8J-5ht" secondAttribute="centerY" constant="-3" id="vJa-a6-bXi"/>
+                            </constraints>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                    <real key="value" value="30"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="MEm-8J-5ht" firstAttribute="centerX" secondItem="xvE-1A-89n" secondAttribute="centerX" id="Il9-C8-7u4"/>
+                        <constraint firstItem="MEm-8J-5ht" firstAttribute="centerY" secondItem="xvE-1A-89n" secondAttribute="centerY" id="ywi-bg-Kj0"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="xvE-1A-89n" firstAttribute="centerY" secondItem="vUN-kp-3ea" secondAttribute="centerY" id="5KX-Zy-vC4"/>
+                <constraint firstItem="xvE-1A-89n" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="Ctq-lc-iT4"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="xvE-1A-89n" secondAttribute="trailing" constant="10" id="EoJ-HB-d3h"/>
+                <constraint firstItem="xvE-1A-89n" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="Pji-gO-YwR"/>
+                <constraint firstItem="xvE-1A-89n" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" constant="5" id="g7U-Us-ekm"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="top" secondItem="xvE-1A-89n" secondAttribute="top" constant="5" id="l4l-1p-f3S"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="viewButton" destination="MEm-8J-5ht" id="RA4-3c-3uP"/>
+            </connections>
+            <point key="canvasLocation" x="-249" y="494"/>
+        </view>
+    </objects>
+</document>

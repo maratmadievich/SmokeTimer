@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="ipad12_9" orientation="landscape">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="TVCStatistic" customModule="Hookah_Timer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="730" height="80"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WzU-wj-D3R" customClass="CornerView" customModule="Hookah_Timer" customModuleProvider="target">
+                    <rect key="frame" x="10" y="5" width="710" height="60"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tyf-bJ-1dW">
+                            <rect key="frame" x="10" y="16.5" width="630" height="17"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="no5-aW-VbM">
+                            <rect key="frame" x="650" y="16.5" width="50" height="17"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="50" id="mcc-av-WPo"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" red="0.058823529411764705" green="0.058823529411764705" blue="0.058823529411764705" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="60" id="h9C-Ji-gqf"/>
+                        <constraint firstAttribute="trailing" secondItem="no5-aW-VbM" secondAttribute="trailing" constant="10" id="iIy-4a-DWx"/>
+                        <constraint firstItem="no5-aW-VbM" firstAttribute="centerY" secondItem="WzU-wj-D3R" secondAttribute="centerY" id="sLV-Il-OKH"/>
+                        <constraint firstItem="Tyf-bJ-1dW" firstAttribute="leading" secondItem="WzU-wj-D3R" secondAttribute="leading" constant="10" id="v34-OL-MCf"/>
+                        <constraint firstItem="Tyf-bJ-1dW" firstAttribute="centerY" secondItem="WzU-wj-D3R" secondAttribute="centerY" id="wKE-L7-DQc"/>
+                        <constraint firstItem="no5-aW-VbM" firstAttribute="leading" secondItem="Tyf-bJ-1dW" secondAttribute="trailing" constant="10" id="yue-Wl-BIQ"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                            <real key="value" value="5"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="WzU-wj-D3R" secondAttribute="bottom" constant="5" id="1aZ-RN-iJJ"/>
+                <constraint firstItem="WzU-wj-D3R" firstAttribute="centerY" secondItem="vUN-kp-3ea" secondAttribute="centerY" id="5T0-pj-wiW"/>
+                <constraint firstItem="WzU-wj-D3R" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="N5R-Xo-bBh"/>
+                <constraint firstItem="WzU-wj-D3R" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="5" id="bt4-UH-lE6"/>
+                <constraint firstItem="WzU-wj-D3R" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="p7g-ja-2BY"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="WzU-wj-D3R" secondAttribute="trailing" constant="10" id="z7c-ag-CJC"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="labelCount" destination="no5-aW-VbM" id="5Te-gX-GfK"/>
+                <outlet property="labelName" destination="Tyf-bJ-1dW" id="CYo-6j-gUl"/>
+            </connections>
+            <point key="canvasLocation" x="18" y="406"/>
+        </view>
+    </objects>
+</document>
