@@ -53,11 +53,11 @@ class WaiterView: UITableViewCell {
            
             request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
                 response in
-                let response = self.delegateSettings?.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response?.isError)! {
-                    self.delegateSettings?.showAlertView(error: (response?.text)!)
+                let response = GlobalConstants.jsonParser.parseEditDelete(JSONData: response.data!)
+                if (response.isError) {
+                    self.delegateSettings?.showAlertView(error: response.text)
                 } else {
-                    self.delegateSettings?.getWaiters()
+                    self.delegateSettings?.prepareGetWaiters()
                 }
             }
         }

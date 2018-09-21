@@ -30,29 +30,38 @@ class JsonParser {
             } else {
                 if let token = json["api_token"] as? String {
                     user.token = token
+                    GlobalConstants.user.token = token
                 }
                 if let cafeName = json["cafe_name"] as? String {
                     user.cafeName = cafeName
+                    GlobalConstants.user.cafeName = cafeName
                 }
                 if let name = json["name"] as? String {
                     user.name = name
+                    GlobalConstants.user.name = name
                 }
                 if let id = json["id"] as? Int {
                     user.id = id
+                    GlobalConstants.user.id = id
                 }
                 if let role = json["role"] as? Int {
                     user.role = role
+                    GlobalConstants.user.role = role
                 }
                 if let cafe = json["cafe"] as? Int {
                     user.cafe = cafe
+                    GlobalConstants.user.cafe = cafe
                 } else {
                     user.cafe = 1
+                    GlobalConstants.user.cafe = 1
                 }
                 if let phone = json["phone"] as? String {
                     user.phone = phone
+                    GlobalConstants.user.phone = phone
                 }
                 if let paid = json["paid"] as? Int {
                     user.paid = paid
+                    GlobalConstants.user.paid = paid
                 }
             }
         }

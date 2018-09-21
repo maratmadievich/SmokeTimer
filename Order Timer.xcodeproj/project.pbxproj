@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		840763872155044D00D70444 /* ViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840763862155044D00D70444 /* ViewExtension.swift */; };
+		840763892155132600D70444 /* ViewControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840763882155132600D70444 /* ViewControllerExtension.swift */; };
 		85D2396D4D4E75DB17BD942C /* Pods_Order_Timer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CED294CDF81A390A4952B62 /* Pods_Order_Timer.framework */; };
 		AA86B55E20E3532800D23F39 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA86B55D20E3532800D23F39 /* AppDelegate.swift */; };
 		AA86B56620E3532800D23F39 /* Order_Timer.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = AA86B56420E3532800D23F39 /* Order_Timer.xcdatamodeld */; };
@@ -113,6 +115,8 @@
 /* Begin PBXFileReference section */
 		0FB3552939C14AB1020EFD0A /* Pods-Order Timer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Order Timer.release.xcconfig"; path = "Pods/Target Support Files/Pods-Order Timer/Pods-Order Timer.release.xcconfig"; sourceTree = "<group>"; };
 		5CED294CDF81A390A4952B62 /* Pods_Order_Timer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Order_Timer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		840763862155044D00D70444 /* ViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtension.swift; sourceTree = "<group>"; };
+		840763882155132600D70444 /* ViewControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerExtension.swift; sourceTree = "<group>"; };
 		AA86B55A20E3532800D23F39 /* Order Timer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Order Timer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA86B55D20E3532800D23F39 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AA86B56520E3532800D23F39 /* Order_Timer.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Order_Timer.xcdatamodel; sourceTree = "<group>"; };
@@ -345,6 +349,7 @@
 				AA86B5B320E3580F00D23F39 /* pad */,
 				AA86B5B420E3581400D23F39 /* phone */,
 				AA86B5C720E3582A00D23F39 /* universal */,
+				840763882155132600D70444 /* ViewControllerExtension.swift */,
 			);
 			path = controllers;
 			sourceTree = "<group>";
@@ -497,6 +502,7 @@
 				AA86B60120E35B7D00D23F39 /* NowView.swift */,
 				AA86B60220E35B7D00D23F39 /* SettingsView.swift */,
 				AA86B60320E35B7D00D23F39 /* StatisticView.swift */,
+				840763862155044D00D70444 /* ViewExtension.swift */,
 			);
 			path = MainViews;
 			sourceTree = "<group>";
@@ -780,6 +786,7 @@
 				AA86B59920E3579A00D23F39 /* TVCAddOrder.swift in Sources */,
 				AA86B5B620E3581E00D23F39 /* VCPWorkDesign.swift in Sources */,
 				AA86B60620E35B7D00D23F39 /* SettingsView.swift in Sources */,
+				840763892155132600D70444 /* ViewControllerExtension.swift in Sources */,
 				AA86B5A720E357D200D23F39 /* Statistic.swift in Sources */,
 				AA86B5A820E357D200D23F39 /* User.swift in Sources */,
 				AA86B55E20E3532800D23F39 /* AppDelegate.swift in Sources */,
@@ -811,6 +818,7 @@
 				AA86B5B020E357ED00D23F39 /* UrlString.swift in Sources */,
 				AA86B59620E3579A00D23F39 /* TVCNowOrder.swift in Sources */,
 				AA86B59220E3579A00D23F39 /* TVCWaiterDesign.swift in Sources */,
+				840763872155044D00D70444 /* ViewExtension.swift in Sources */,
 				AA86B61C20E35BC700D23F39 /* ShadowView.swift in Sources */,
 				AA86B62020E35BC700D23F39 /* NewTableView.swift in Sources */,
 				AA86B5EF20E35AC200D23F39 /* CoreDelay+CoreDataProperties.swift in Sources */,

@@ -37,12 +37,7 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
     
     
     override func willMove(toSuperview newSuperview: UIView?) {
-        getSettings()
-    }
-    
-    
-    override func awakeFromNib() {
-        
+        getSettings(delegate: self)
     }
     
     
@@ -264,27 +259,35 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
     
     // MARK: Работа с базой данных
     
-    func getSettings() {
-        if (!Connectivity.isConnectedToInternet) {
-            showAlertView(error: "Отсутствует соедиенение с Интернетом")
-        } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                if (self.settings.error.count > 0) {
-                    self.showAlertView(error: self.settings.error)
-                } else {
-                    if (self.settings.open > 0) {
-                        self.labelStatus.text = "Рабочая смена открыта"
-                    } else {
-                        self.labelStatus.text = "Рабочая смена закрыта"
-                    }
-                    self.getTables()
-                }
-            }
-        }
-    }
+//    func getSettings() {
+//        if (!Connectivity.isConnectedToInternet) {
+//            showAlertView(error: "Отсутствует соедиенение с Интернетом")
+//        } else {
+//            var parameters = Parameters()
+//            parameters["api_token"] = self.user.token
+//            parameters["cafe"] = self.user.cafe
+//            Alamofire.request(urlString.getUrl() + "api/CafeDetailed",
+//                              method: .post,
+//                              parameters: parameters,
+//                              encoding: JSONEncoding.default)
+//                .responseJSON {
+//            }
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
+//                if (self.settings.error.count > 0) {
+//                    self.showAlertView(error: self.settings.error)
+//                } else {
+//                    if (self.settings.open > 0) {
+//                        self.labelStatus.text = "Рабочая смена открыта"
+//                    } else {
+//                        self.labelStatus.text = "Рабочая смена закрыта"
+//                    }
+//                    self.getTables()
+//                }
+//            }
+//        }
+//    }
     
     
     func getTables() {
@@ -359,4 +362,24 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
         }
     }
 
+}
+
+extension NowView: AlamofireViewProtocol {
+    func returnMy(waiters: [Waiter]) {}
+    
+    
+    func returnError(error: String) {
+        self.showAlertView(error: error)
+    }
+    
+    func returnSettingsSuccess() {
+        if (GlobalConstants.settings.open > 0) {
+            self.labelStatus.text = "Рабочая смена открыта"
+        } else {
+            self.labelStatus.text = "Рабочая смена закрыта"
+        }
+        self.getTables()
+    }
+    
+    
 }

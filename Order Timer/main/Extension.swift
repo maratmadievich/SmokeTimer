@@ -15,6 +15,7 @@ struct GlobalConstants {
     static var user = User()
     static var settings = Settings()
     static var tables = [Table]()
+    static let jsonParser = JsonParser()
 }
 
 struct defaultsKeys {

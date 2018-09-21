@@ -8,6 +8,7 @@
 //
 
 import UIKit
+import SwiftyJSON
 import Alamofire
 
 class TVCWaiterDesign: UITableViewCell {
@@ -23,8 +24,6 @@ class TVCWaiterDesign: UITableViewCell {
     
     let urlString = UrlString()
     
-    var token = ""
-    var cafe = 0
     var waiter = Waiter()
     
     override func awakeFromNib() {
@@ -51,19 +50,18 @@ class TVCWaiterDesign: UITableViewCell {
         if (!Connectivity.isConnectedToInternet) {
             delegateSettings?.showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = token
-            parameters["cafe"] = String(cafe)
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
             parameters["user"] = String(waiter.id)
             
             request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
                 response in
-                let response = self.delegateSettings?.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response?.isError)! {
-                    self.delegateSettings?.showAlertView(error: (response?.text)!)
+                let response = GlobalConstants.jsonParser.parseEditDelete(JSONData: response.data!)
+                if (response.isError) {
+                    self.delegateSettings?.showAlertView(error: response.text)
                 } else {
-                    self.delegateSettings?.getWaiters()
-                }
+                    self.delegateSettings?.prepareGetWaiters()                }
             }
         }
     }

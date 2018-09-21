@@ -77,7 +77,6 @@ class VCStart: UIViewController, AddWaiterProtocol, ReloadWaitersProtocol, Chang
             if let viewTable = Bundle.main.loadNibNamed("Settings", owner: self, options: nil)?.first as? SettingsView {
                 viewSettings = viewTable
                 let rect = CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: viewWork.frame.size.width, height: viewWork.frame.size.height))
-                viewSettings.user = self.user
                 viewSettings.frame = rect
                 viewSettings.delegate = self
                 viewWork.addSubview(viewSettings)
@@ -183,7 +182,7 @@ class VCStart: UIViewController, AddWaiterProtocol, ReloadWaitersProtocol, Chang
     
     
     func reloadWaiters() {
-        viewSettings.getWaiters()
+        viewSettings.prepareGetWaiters()
     }
     
     
