@@ -8,6 +8,7 @@
 
 import UIKit
 import Alamofire
+import SwiftyJSON
 
 protocol SettingsProtocol {
     func showAlertView(error: String)
@@ -37,15 +38,9 @@ class SettingsView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVie
     let jsonParser = JsonParser()
     
     var user = User()
-    var settings = Settings()
     var selectedIndexPath: IndexPath?
     
     var waiters = [Waiter]()
-    
-    
-//    override func awakeFromNib() {
-//        
-//    }
     
     
     override func layoutSubviews() {
@@ -58,7 +53,6 @@ class SettingsView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVie
         self.addGestureRecognizer(tap)
         getWaiters()
         getSettings()
-
     }
     
     
@@ -130,15 +124,64 @@ class SettingsView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVie
     // MARK: Работа с базой данных
     
     func getWaiters() {
+        
         if (!Connectivity.isConnectedToInternet) {
             self.showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
-                self.waiters.append(Waiter())
-                self.tableView.reloadData()
+            var parameters = Parameters()
+            parameters["api_token"] = self.user.token
+            parameters["cafe"] = self.user.cafe
+            
+            Alamofire.request(urlString.getUrl() + "api/CafeWaiter",
+                method: .post,
+                parameters: parameters,
+                encoding: JSONEncoding.default)
+                .responseJSON {
+                    response in
+                    
+                    switch response.result {
+                    case .success(let value):
+                        
+                        let json = JSON(value)
+                        self.waiters.removeAll()
+                        print("CafeWaiter_data: \(json)")
+                            
+                        if let waitersJson = json["success"].array {
+                            for waiterJson in waitersJson {
+                                let waiter = Waiter()
+                                if let id = waiterJson["id"].int {
+                                    print("id " + String(id))
+                                    waiter.id = id
+                                }
+                                if let name = waiterJson["name"].string {
+                                    print("name " + name)
+                                    waiter.name = name
+                                }
+                                if let login = waiterJson["login"].string {
+                                    print("login " + login)
+                                    waiter.login = login
+                                }
+                                if let phone = waiterJson["phone"].string {
+                                    print("phone " + String(phone))
+                                    waiter.phone = phone
+                                }
+                                self.waiters.append(waiter)
+                            }
+                        }
+                        self.tableView.reloadData()
+                        break
+                        
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                        break
+                    }
+        
+//            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
+//                self.waiters.append(Waiter())
+//                self.tableView.reloadData()
+//            }
             }
         }
     }
@@ -148,24 +191,111 @@ class SettingsView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVie
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                if (self.settings.error.count > 0) {
-//                    self.showEmptyFieldAlert(error: self.settings.error)
-                } else {
-                    self.textFieldStartOrder.text = String(self.settings.timeStartOrder)
-                    self.textFieldFiveMinutes.text = String(self.settings.timeFiveMinutes)
-                    self.textFieldWorkTimer.text = String(self.settings.timeWorkTimer)
-                    self.textFieldCountIterations.text = String(self.settings.countIterations)
-                    self.textFieldCountIterations.text = String(self.settings.countIterations)
-                    self.textFieldOrderCount.text = String(self.settings.maxOrder)
-                    self.textFieldDelay.text = String(self.settings.maxDelay)
-                }
+            var parameters = Parameters()
+            parameters["api_token"] = self.user.token
+            parameters["cafe"] = self.user.cafe
+            
+            Alamofire.request(urlString.getUrl() + "api/CafeDetailed",
+                              method: .post,
+                              parameters: parameters,
+                              encoding: JSONEncoding.default)
+                .responseJSON {
+                    response in
+                    
+                    switch response.result {
+                    case .success(let value):
+                        
+                        let json = JSON(value)
+                        print("CafeDetailed_data: \(json)")
+                        
+                        if let error = json["error"] as? String {
+                            GlobalConstants.settings.error = error
+                        } else {
+                            if let data = json["success"].dictionary {
+                                if let name = data["name"]?.string {
+                                    GlobalConstants.settings.name = name
+                                }
+                                if let timeStartOrder = data["order_timer"]?.int {
+                                    GlobalConstants.settings.timeStartOrder = timeStartOrder
+                                }
+                                if let timeFiveMinutes = data["minutes_timer"]?.int {
+                                    GlobalConstants.settings.timeFiveMinutes = timeFiveMinutes
+                                }
+                                if let timeWorkTimer = data["work_timer"]?.int {
+                                    GlobalConstants.settings.timeWorkTimer = timeWorkTimer
+                                }
+                                if let countIterations = data["timer_count"]?.int {
+                                    GlobalConstants.settings.countIterations = countIterations
+                                }
+                                if let maxOrder = data["max_order"]?.int {
+                                    GlobalConstants.settings.maxOrder = maxOrder
+                                }
+                                if let maxDelay = data["max_delay"]?.int {
+                                    GlobalConstants.settings.maxDelay = maxDelay
+                                }
+                                if let height = data["height"]?.float {
+                                    GlobalConstants.settings.height = CGFloat(height)
+                                }
+                                if let width = data["width"]?.float {
+                                    GlobalConstants.settings.width = CGFloat(width)
+                                }
+                                if let open = data["open"]?.int {
+                                    GlobalConstants.settings.open = open
+                                }
+                                if let waiter = data["waiter"]?.int {
+                                    GlobalConstants.settings.waiter = waiter
+                                }
+                                if let workspace = data["workspace_count"]?.int {
+                                    GlobalConstants.settings.workspaceCount = workspace
+                                }
+                                GlobalConstants.settings.cafe = GlobalConstants.user.cafe
+                            }
+                        }
+                        self.setSettings()
+                        break
+                        
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                        break
+                    }
+                    
+                    //            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
+                    //                response in
+                    //                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
+                    //                self.waiters.append(Waiter())
+                    //                self.tableView.reloadData()
+                    //            }
             }
+            
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
+//                if (self.settings.error.count > 0) {
+////                    self.showEmptyFieldAlert(error: self.settings.error)
+//                } else {
+//                    self.textFieldStartOrder.text = String(self.settings.timeStartOrder)
+//                    self.textFieldFiveMinutes.text = String(self.settings.timeFiveMinutes)
+//                    self.textFieldWorkTimer.text = String(self.settings.timeWorkTimer)
+//                    self.textFieldCountIterations.text = String(self.settings.countIterations)
+//                    self.textFieldCountIterations.text = String(self.settings.countIterations)
+//                    self.textFieldOrderCount.text = String(self.settings.maxOrder)
+//                    self.textFieldDelay.text = String(self.settings.maxDelay)
+//                }
+//            }
         }
     }
+
+
+
+private func setSettings() {
+    self.textFieldStartOrder.text = String(GlobalConstants.settings.timeStartOrder)
+    self.textFieldFiveMinutes.text = String(GlobalConstants.settings.timeFiveMinutes)
+    self.textFieldWorkTimer.text = String(GlobalConstants.settings.timeWorkTimer)
+    self.textFieldCountIterations.text = String(GlobalConstants.settings.countIterations)
+    self.textFieldCountIterations.text = String(GlobalConstants.settings.countIterations)
+    self.textFieldOrderCount.text = String(GlobalConstants.settings.maxOrder)
+    self.textFieldDelay.text = String(GlobalConstants.settings.maxDelay)
+}
     
     
     func checkTimerData() {

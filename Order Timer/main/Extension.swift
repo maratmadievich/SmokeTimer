@@ -12,7 +12,9 @@ import UIKit
 struct GlobalConstants {
     
     static var mainAPI: String   = "http://server.smoketimer.ru/"
-    static var user: User = User()
+    static var user = User()
+    static var settings = Settings()
+    static var tables = [Table]()
 }
 
 struct defaultsKeys {
