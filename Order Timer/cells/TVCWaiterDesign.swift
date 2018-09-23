@@ -54,16 +54,40 @@ class TVCWaiterDesign: UITableViewCell {
             parameters["api_token"] = GlobalConstants.user.token
             parameters["cafe"] = GlobalConstants.user.cafe
             parameters["user"] = String(waiter.id)
+            GlobalConstants.alamofireResponse.deleteWaiter(parameters: parameters, delegate: self)
             
-            request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = GlobalConstants.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.delegateSettings?.showAlertView(error: response.text)
-                } else {
-                    self.delegateSettings?.prepareGetWaiters()                }
-            }
+//            request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = GlobalConstants.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.delegateSettings?.showAlertView(error: response.text)
+//                } else {
+//                    self.delegateSettings?.prepareGetWaiters()                }
+//            }
         }
     }
 
 }
+
+extension TVCWaiterDesign: BackEndWaitersProtocol {
+    
+    func returnMy(waiters: [Waiter]) {}
+    func returnAddSuccess() {}
+    func returnUpdateSuccess() {}
+    func returnChangeSuccess() {}
+    
+    func returnDeleteSuccess() {
+        self.delegateSettings?.prepareGetWaiters()
+    }
+    
+    func returnError(error: String) {
+        self.delegateSettings?.showAlertView(error: error)
+    }
+    
+    
+}
+
+
+
+
+

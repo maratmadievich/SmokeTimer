@@ -21,12 +21,6 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
     
     @IBOutlet var tapGestureRecognizer: UITapGestureRecognizer!
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
-    var user = User()
-    var settings = Settings()
-    
     var pageCount: CGFloat = 1
     
     var tableWidth: CGFloat = 0
@@ -37,12 +31,12 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
     
     
     override func willMove(toSuperview newSuperview: UIView?) {
-        getSettings(delegate: self)
+//        GlobalConstants.alamofireResponse.getSettings(delegate: self)
     }
     
     
-    override func layoutSubviews() {
-//         getSettings()
+    func loadData() {
+        GlobalConstants.alamofireResponse.getSettings(delegate: self)
     }
     
     
@@ -67,7 +61,7 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
             view.removeFromSuperview()
         }
         
-        var pageCount: CGFloat = CGFloat(self.settings.workspaceCount)
+        var pageCount: CGFloat = CGFloat(GlobalConstants.settings.workspaceCount)
         if pageCount < 1 {
             pageCount = 1
         }
@@ -195,15 +189,15 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
                     break
                     
                 case 1:
-                    timerTime = Double(self.settings.timeStartOrder) * 60.0
+                    timerTime = Double(GlobalConstants.settings.timeStartOrder) * 60.0
                     break
                     
                 case 2:
-                    timerTime = Double(self.settings.timeFiveMinutes) * 60.0
+                    timerTime = Double(GlobalConstants.settings.timeFiveMinutes) * 60.0
                     break
                     
                 default:
-                    timerTime = Double(self.settings.timeWorkTimer) * 60.0
+                    timerTime = Double(GlobalConstants.settings.timeWorkTimer) * 60.0
                     break
                 }
                 if (table.orders.count > 1) {
@@ -256,84 +250,54 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
     }
     
     
-    
     // MARK: Работа с базой данных
     
-//    func getSettings() {
-//        if (!Connectivity.isConnectedToInternet) {
-//            showAlertView(error: "Отсутствует соедиенение с Интернетом")
-//        } else {
-//            var parameters = Parameters()
-//            parameters["api_token"] = self.user.token
-//            parameters["cafe"] = self.user.cafe
-//            Alamofire.request(urlString.getUrl() + "api/CafeDetailed",
-//                              method: .post,
-//                              parameters: parameters,
-//                              encoding: JSONEncoding.default)
-//                .responseJSON {
-//            }
-//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-//                response in
-//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-//                if (self.settings.error.count > 0) {
-//                    self.showAlertView(error: self.settings.error)
-//                } else {
-//                    if (self.settings.open > 0) {
-//                        self.labelStatus.text = "Рабочая смена открыта"
-//                    } else {
-//                        self.labelStatus.text = "Рабочая смена закрыта"
-//                    }
-//                    self.getTables()
-//                }
-//            }
-//        }
-//    }
-    
-    
-    func getTables() {
+    func prepareGetTables() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
-
-                self.loadScrollView()
-                self.getOrder()
-            }
+            GlobalConstants.alamofireResponse.getTables(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
+//
+//                self.loadScrollView()
+//                self.getOrder()
+//            }
         }
     }
     
     
     // Получение списка заказов
-    func getOrder() {
+    func prepareGetOrders() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
-                response in
-                let orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
-                
-                for order in orders {
-                    for table in self.tables {
-                        if order.idTable == table.id {
-                            table.orders.append(order)
-                            break
-                        }
-                    }
-                }
-                self.setStatus()
-            }
+            GlobalConstants.alamofireResponse.getOrders(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
+//
+//                for order in orders {
+//                    for table in self.tables {
+//                        if order.idTable == table.id {
+//                            table.orders.append(order)
+//                            break
+//                        }
+//                    }
+//                }
+//                self.setStatus()
+//            }
         }
     }
     
     
     func clearOrders() {
-        self.settings.open = 0
+        GlobalConstants.settings.open = 0
         for table in tables {
             table.orders.removeAll()
         }
@@ -364,9 +328,9 @@ class NowView: UIView, UIScrollViewDelegate, CAAnimationDelegate {
 
 }
 
-extension NowView: AlamofireViewProtocol {
-    func returnMy(waiters: [Waiter]) {}
+extension NowView: BackEndSettingsProtocol {
     
+    func returnUpdateSuccess() {}
     
     func returnError(error: String) {
         self.showAlertView(error: error)
@@ -378,8 +342,50 @@ extension NowView: AlamofireViewProtocol {
         } else {
             self.labelStatus.text = "Рабочая смена закрыта"
         }
-        self.getTables()
+        self.prepareGetTables()
     }
+}
+
+extension NowView: BackEndTablesProtocol {
+    
+    func returnMy(tables: [Table]) {
+        self.tables = tables
+        self.loadScrollView()
+        self.prepareGetOrders()
+    }
+    
+    func returnAdd(table: Table) {}
+    func returnDelete(table: Int) {}
+    
+}
+
+extension NowView: BackEndOrdersProtocol {
+    func returnMy(orders: [Order]) {
+        for order in orders {
+            for table in self.tables {
+                if order.idTable == table.id {
+                    table.orders.append(order)
+                    break
+                }
+            }
+        }
+        self.setStatus()
+    }
+    
+    func returnAdd(order: Order) {}
+    func returnUpdate(order: Order) {}
+    func returnDelete(order: Order) {}
     
     
 }
+
+
+
+
+
+
+
+
+
+
+

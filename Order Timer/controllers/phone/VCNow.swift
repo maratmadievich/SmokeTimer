@@ -24,16 +24,10 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var buttonChangeWaiter: UIButton!
     @IBOutlet weak var buttonShowWaiters: UIBarButtonItem!
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
     var isWaiterLoad = false
     var isShowWaiters = false
     var isSettingsLoad = false
     var selectedIndexPath = IndexPath()
-    
-    var user = User()
-    var settings = Settings()
     
     var orders = [Order]()
     var tables = [Table]()
@@ -43,8 +37,9 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     
     override func viewWillAppear(_ animated: Bool) {
-        getWaiters()
-        getSettings()
+        prepareGetWaiters()
+        prepareGetSettings()
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -69,7 +64,7 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     
     @objc func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (self.settings.open > 0 ) {
+        if (GlobalConstants.settings.open > 0 ) {
             buttonChangeWaiter.isEnabled = true
             selectedIndexPath = indexPath
         }
@@ -80,12 +75,12 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBAction func btnCloseWorkClicked(_ sender: Any) {
         self.showWaitersView(isShow: false)
-        self.closeWork()
+        self.prepareCloseWork()
     }
     
     
     @IBAction func btnChangeClicked(_ sender: Any) {
-        self.changeWaiter()
+        self.prepareChangeWaiter()
     }
     
     
@@ -97,134 +92,140 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     // MARK: Работа с базой данных
     
     // Получение официантов
-    func getWaiters() {
+    func prepareGetWaiters() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
-                self.isWaiterLoad = true
-                self.setWaiterText()
-                self.tableView.reloadData()
-            }
+            GlobalConstants.alamofireResponse.getWaiters(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
+//                self.isWaiterLoad = true
+//                self.setWaiterText()
+//                self.tableView.reloadData()
+//            }
         }
     }
     
     
     // Получение настроек
-    func getSettings() {
+    func prepareGetSettings() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                self.isSettingsLoad = true
-                if (self.settings.height >= 300
-                    && self.settings.width >= 300) {
-                    self.constraintHeight.constant = self.settings.height
-                    self.constraintWidth.constant = self.settings.width
-                } else {
-                    self.constraintHeight.constant = 300
-                    self.constraintWidth.constant = 300
-                }
-                self.setWaiterText()
-                self.getTables()
-            }
+            GlobalConstants.alamofireResponse.getSettings(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
+//                self.isSettingsLoad = true
+//                if (self.settings.height >= 300
+//                    && self.settings.width >= 300) {
+//                    self.constraintHeight.constant = self.settings.height
+//                    self.constraintWidth.constant = self.settings.width
+//                } else {
+//                    self.constraintHeight.constant = 300
+//                    self.constraintWidth.constant = 300
+//                }
+//                self.setWaiterText()
+//                self.getTables()
+//            }
         }
     }
     
     
     // Получение списка таблиц
-    func getTables() {
+    func prepareGetTables() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
-                if (self.tables.count > 0) {
-                    self.drawTables()
-                }
-                self.getOrder()
-            }
+            GlobalConstants.alamofireResponse.getTables(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
+//                if (self.tables.count > 0) {
+//                    self.drawTables()
+//                }
+//                self.getOrder()
+//            }
         }
     }
     
     
     // Получение списка заказов
-    func getOrder() {
+    func prepareGetOrders() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
-                
-                if (self.tables.count > 0) {
-                    self.setStatus()
-                }
-            }
+            GlobalConstants.alamofireResponse.getOrders(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
+//
+//                if (self.tables.count > 0) {
+//                    self.setStatus()
+//                }
+//            }
         }
     }
     
     
     // Смена статуса заведения (Закрыть смену)
-    func closeWork() {
+    func prepareCloseWork() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
-            parameters["waiter"] = String(self.user.id)
-            parameters["open"] = "0"
-            
-            request(urlString.getUrl() + "api/CafeChangeOpen", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                    self.settings.waiter = self.user.id
-                    self.settings.open = 0
-                    self.orders.removeAll()
-                    self.setStatus()
-                    self.setWaiterText()
-                }
-            }
+            GlobalConstants.alamofireResponse.changeOpen(isOpen: true, delegate: self)
+//            var parameters = [String: String]()
+//            parameters["api_token"] = self.user.token
+//            parameters["cafe"] = String(self.user.cafe)
+//            parameters["waiter"] = String(self.user.id)
+//            parameters["open"] = "0"
+//
+//            request(urlString.getUrl() + "api/CafeChangeOpen", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                    self.settings.waiter = self.user.id
+//                    self.settings.open = 0
+//                    self.orders.removeAll()
+//                    self.setStatus()
+//                    self.setWaiterText()
+//                }
+//            }
         }
     }
     
     
     // Смена статуса заведения (Начать/закрыть смену)
-    func changeWaiter() {
+    func prepareChangeWaiter() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
-            parameters["waiter"] = String(self.waiters[self.selectedIndexPath.row].id)
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["waiter"] = self.waiters[self.selectedIndexPath.row].id
+            GlobalConstants.alamofireResponse.changeWaiter(parameters: parameters, delegate: self)
             
-            request(urlString.getUrl() + "api/CafeChangeWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                    self.settings.waiter = self.waiters[self.selectedIndexPath.row].id
-                    self.tableView.deselectRow(at: self.selectedIndexPath, animated: true)
-                    self.setWaiterText()
-                }
-            }
+//            request(urlString.getUrl() + "api/CafeChangeWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                    self.settings.waiter = self.waiters[self.selectedIndexPath.row].id
+//                    self.tableView.deselectRow(at: self.selectedIndexPath, animated: true)
+//                    self.setWaiterText()
+//                }
+//            }
         }
     }
     
@@ -249,10 +250,10 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func setWaiterText() {
         if (self.isWaiterLoad && self.isSettingsLoad) {
             buttonChangeWaiter.isEnabled = false
-            if (self.settings.open > 0) {
+            if (GlobalConstants.settings.open > 0) {
                 buttonCloseWork.isEnabled = true
                 for waiter in self.waiters {
-                    if (waiter.id == self.settings.waiter) {
+                    if (waiter.id == GlobalConstants.settings.waiter) {
                         labelCurrentWaiter.text = "Текущий официант: " + waiter.name
                         break
                     }
@@ -387,3 +388,104 @@ class VCNow: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
 
 }
+
+extension VCNow: BackEndWaitersProtocol {
+    
+    func returnMy(waiters: [Waiter]) {
+        self.waiters = waiters
+        self.isWaiterLoad = true
+        self.setWaiterText()
+        self.tableView.reloadData()
+    }
+    
+    func returnChangeSuccess() {
+        GlobalConstants.settings.waiter = self.waiters[self.selectedIndexPath.row].id
+        self.tableView.deselectRow(at: self.selectedIndexPath, animated: true)
+        self.setWaiterText()
+    }
+    
+    func returnError(error: String) {
+        showEmptyFieldAlert(error: error)
+    }
+    
+    func returnAddSuccess() {}
+    func returnUpdateSuccess() {}
+    func returnDeleteSuccess() {}
+    
+}
+
+extension VCNow: BackEndSettingsProtocol {
+    
+    func returnSettingsSuccess() {
+        self.isSettingsLoad = true
+        if (GlobalConstants.settings.height >= 300
+            && GlobalConstants.settings.width >= 300) {
+            self.constraintHeight.constant = GlobalConstants.settings.height
+            self.constraintWidth.constant = GlobalConstants.settings.width
+        } else {
+            self.constraintHeight.constant = 300
+            self.constraintWidth.constant = 300
+        }
+        self.setWaiterText()
+        self.prepareGetTables()
+    }
+    
+}
+
+extension VCNow: BackEndTablesProtocol {
+    
+    func returnMy(tables: [Table]) {
+        self.tables = tables
+        if (self.tables.count > 0) {
+            self.drawTables()
+        }
+        self.prepareGetOrders()
+    }
+    
+    func returnAdd(table: Table) {}
+    func returnDelete(table: Int) {}
+    
+}
+
+extension VCNow: BackEndOrdersProtocol {
+    func returnMy(orders: [Order]) {
+        self.orders = orders
+        if (self.tables.count > 0) {
+            self.setStatus()
+        }
+    }
+    
+    func returnAdd(order: Order) {}
+    func returnUpdate(order: Order) {}
+    func returnDelete(order: Order) {}
+
+}
+
+extension VCNow: BackEndChangeOpenProtocol {
+    
+    func returnSuccess(isOpen: Bool) {
+        GlobalConstants.settings.waiter = GlobalConstants.user.id
+        GlobalConstants.settings.open = 0
+        self.orders.removeAll()
+        self.setStatus()
+        self.setWaiterText()
+    }
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

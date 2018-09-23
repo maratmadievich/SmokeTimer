@@ -8,9 +8,7 @@
 
 import UIKit
 import Alamofire
-import StoreKit
-
-
+import SwiftyJSON
 
 class VCAuth: UIViewController {
 
@@ -20,20 +18,18 @@ class VCAuth: UIViewController {
     @IBOutlet weak var textFieldLogin: UITextField!
     @IBOutlet weak var textFieldPassword: UITextField!
     
-    let urlString = UrlString()
-    
     var textEmptyField = "Одно из полей не заполнено"
     
     var fromNet = false
     var isTryAuth = false
     
-    var user = User()
-    let jsonParser = JsonParser()
     let coreDataParser = CoreDataParser()
     
     
     override func viewWillAppear(_ animated: Bool) {
         textFieldLogin.text = coreDataParser.getUserLogin()
+        GlobalConstants.currentViewController = self
+        GlobalConstants.isHookNotPaid = false
     }
     
     
@@ -87,45 +83,47 @@ class VCAuth: UIViewController {
             self.isTryAuth = false
             showAlertView(error: "Отсутствует соединение с Интернетом")
         } else {
-            let parameters = ["login":  textFieldLogin.text!, "password":  textFieldPassword.text!]
+            var parameters = Parameters()
             
-            print ("auth_url:\(urlString.getUrl())api/getToken")
-            print ("auth_params:\(parameters)")
-            request(urlString.getUrl() + "api/getToken", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.fromNet = true
-                self.user = self.jsonParser.parseUser(JSONData: response.data!)
-                if (self.user.id > 0) {
-                    self.user.login = self.textFieldLogin.text!
-                    self.user.pass = self.textFieldPassword.text!
-//                    self.coreDataParser.deleteUser(id: self.user.id)
-                    self.coreDataParser.deleteUsers()
-                    self.coreDataParser.saveUser(user: self.user)
-                }
-                self.checkUser()
-                self.isTryAuth = false
-            }
+            parameters["login"] = textFieldLogin.text!
+            parameters["password"] = textFieldPassword.text!
+            GlobalConstants.alamofireResponse.getToken(parameters: parameters, delegate: self)
+            
+//            request(urlString.getUrl() + "api/getToken", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.fromNet = true
+//                self.user = self.jsonParser.parseUser(JSONData: response.data!)
+//                if (self.user.id > 0) {
+//                    self.user.login = self.textFieldLogin.text!
+//                    self.user.pass = self.textFieldPassword.text!
+////                    self.coreDataParser.deleteUser(id: self.user.id)
+//                    self.coreDataParser.deleteUsers()
+//                    self.coreDataParser.saveUser(user: self.user)
+//                }
+//                self.checkUser()
+//                self.isTryAuth = false
+//            }
         }
     }
     
     
     func checkUser() {
+        isTryAuth = false
         self.textFieldPassword.text = ""
-        
-        if (self.user.id > 0) {
-            if (self.user.paid != 1) {
+        if (GlobalConstants.user.id > 0) {
+            if (GlobalConstants.user.paid != 1) {
                 showAlertView(error: "Нужно оплатить работу приложения")
                 view.endEditing(true)
                 return
             }
             self.textFieldLogin.becomeFirstResponder()
-            if (self.user.role == 1) {
+            if (GlobalConstants.user.role == 1) {
                 self.performSegue(withIdentifier: "showStart", sender: nil)
             } else {
                 self.performSegue(withIdentifier: "showWork", sender: nil)
             }
         } else {
-            showAlertView(error: self.user.error)
+            showAlertView(error: GlobalConstants.user.error)
         }
         
         view.endEditing(true)
@@ -134,22 +132,12 @@ class VCAuth: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "showStart") {
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-                let vc = segue.destination as! VCStart
-                vc.user = self.user
-            } else {
-                let vc = segue.destination as! VCMenu
-                vc.user = self.user
-            }
         }
         if (segue.identifier == "showWork") {
             if (UIDevice.current.userInterfaceIdiom == .pad) {
                 let vc = segue.destination as! VCPWorkDesign
-                vc.user = self.user
-                vc.fromNet = self.fromNet
             } else {
                 let vc = segue.destination as! VCNowTable
-                vc.user = self.user
                 vc.fromAuth = true
             }
         }
@@ -184,6 +172,28 @@ class VCAuth: UIViewController {
                 self.viewAlert.isHidden = true
             })
         }
+    }
+    
+    
+}
+
+extension VCAuth: BackEndLoginProtocol {
+    
+    func returnLoginSuccess() {
+        isTryAuth = false
+        if (GlobalConstants.user.id > 0) {
+            GlobalConstants.user.login = self.textFieldLogin.text!
+            GlobalConstants.user.pass = self.textFieldPassword.text!
+            
+            self.coreDataParser.deleteUsers()
+            self.coreDataParser.saveUser(user: GlobalConstants.user)
+        }
+        self.checkUser()
+    }
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+        isTryAuth = false
     }
     
     

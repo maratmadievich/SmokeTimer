@@ -16,15 +16,10 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     @IBOutlet weak var labelAlert: UILabel!
     
     @IBOutlet weak var tableView: UITableView!
-    
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
+
     var isFirst = true
     
-    var user = User()
     var timer = Timer()
-    var settings = Settings()
     
     var tables = [Table]()
     var orders = [Order]()
@@ -33,7 +28,7 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     
     override func viewWillAppear(_ animated: Bool) {
-        getSettings()
+        prepareGetSettings()
         if (fromAuth) {
             let btn1 = UIButton(type: .custom)
             btn1.setTitle("Выйти", for: .normal)
@@ -43,6 +38,7 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             
             self.navigationItem.setLeftBarButtonItems([item1], animated: false)
         }
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -72,29 +68,9 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     // MARK: Функции таблицы
     
-    
-//    func numberOfSections(in tableView: UITableView) -> Int {
-//         return self.tables.count
-//    }
-    
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        if (self.tables.count > 0) {
-//            return self.tables[section].orders.count
-//        }
-//        return 0
         return orders.count
     }
-    
-    
-//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        let  cell = tableView.dequeueReusableCell(withIdentifier: "RowTable") as! TVCNowTable
-//        if (tables.count > 0) {
-//            cell.labelName.text = "Столик \"" + tables[section].name + "\""
-//            cell.labelCount.text = String(tables[section].orders.count)
-//        }
-//        return cell
-//    }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -112,71 +88,74 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     // MARK: Работа с базой данных
     
     // Получение настроек
-    @objc func getSettings() {
+    @objc func prepareGetSettings() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                if self.settings.open > 0 {
-                    self.getTables()
-                } else {
-                    self.deleteAllNotifications()
-                    self.tables.removeAll()
-                    self.tableView.reloadData()
-                    if (self.isFirst) {
-                        self.showAlertView(error: "Смена сейчас закрыта")
-                    }
-                }
-                self.isFirst = false
-            }
+            GlobalConstants.alamofireResponse.getSettings(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
+//                if self.settings.open > 0 {
+//                    self.getTables()
+//                } else {
+//                    self.deleteAllNotifications()
+//                    self.tables.removeAll()
+//                    self.tableView.reloadData()
+//                    if (self.isFirst) {
+//                        self.showAlertView(error: "Смена сейчас закрыта")
+//                    }
+//                }
+//                self.isFirst = false
+//            }
         }
     }
     
     
     // Получение списка таблиц
-    func getTables() {
+    func prepareGetTables() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.deleteAllNotifications()
-                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
-                self.getOrder()
-            }
+            GlobalConstants.alamofireResponse.getTables(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.deleteAllNotifications()
+//                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
+//                self.getOrder()
+//            }
         }
     }
     
     
     // Получение списка заказов
-    func getOrder() {
+    func prepareGetOrder() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
-                var i = 0
-                while (i < self.tables.count) {
-                    self.tables[i].orders.removeAll()
-                    for order in self.orders {
-                        if (self.tables[i].id == order.idTable) {
-                            order.tableName = self.tables[i].name
-//                            self.tables[i].orders.append(order)
-                        }
-                    }
-                    i+=1
-                }
-                self.addAllNotifications()
-                self.tableView.reloadData()
-            }
+            GlobalConstants.alamofireResponse.getOrders(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
+//                var i = 0
+//                while (i < self.tables.count) {
+//                    self.tables[i].orders.removeAll()
+//                    for order in self.orders {
+//                        if (self.tables[i].id == order.idTable) {
+//                            order.tableName = self.tables[i].name
+////                            self.tables[i].orders.append(order)
+//                        }
+//                    }
+//                    i+=1
+//                }
+//                self.addAllNotifications()
+//                self.tableView.reloadData()
+//            }
         }
     }
     
@@ -195,7 +174,7 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     // Запуск таймера на обновление рабочей области
     func runTimer() {
-        timer = Timer.scheduledTimer(timeInterval: 15, target: self,   selector: (#selector(VCNowTable.getSettings)), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 15, target: self,   selector: (#selector(VCNowTable.prepareGetSettings)), userInfo: nil, repeats: true)
     }
     
     
@@ -252,7 +231,76 @@ class VCNowTable: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     
+}
+
+extension VCNowTable: BackEndSettingsProtocol {
     
+    func returnUpdateSuccess() {}
     
+    func returnSettingsSuccess() {
+        if GlobalConstants.settings.open > 0 {
+            self.prepareGetTables()
+        } else {
+            self.deleteAllNotifications()
+            self.tables.removeAll()
+            self.tableView.reloadData()
+            if (self.isFirst) {
+                self.showAlertView(error: "Смена сейчас закрыта")
+            }
+        }
+        self.isFirst = false
+    }
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+    }
     
 }
+
+extension VCNowTable: BackEndTablesProtocol {
+    
+    func returnAdd(table: Table) {}
+    func returnDelete(table: Int) {}
+    
+    
+    func returnMy(tables: [Table]) {
+        self.deleteAllNotifications()
+        self.tables = tables
+        self.prepareGetOrder()
+    }
+
+}
+
+extension VCNowTable: BackEndOrdersProtocol {
+    func returnMy(orders: [Order]) {
+        self.orders = orders
+        var i = 0
+        while (i < self.tables.count) {
+            self.tables[i].orders.removeAll()
+            for order in self.orders {
+                if (self.tables[i].id == order.idTable) {
+                    order.tableName = self.tables[i].name
+                }
+            }
+            i+=1
+        }
+        self.addAllNotifications()
+        self.tableView.reloadData()
+    }
+    
+    func returnAdd(order: Order) {}
+    func returnUpdate(order: Order) {}
+    func returnDelete(order: Order) {}
+    
+}
+
+
+
+
+
+
+
+
+
+
+

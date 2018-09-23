@@ -15,24 +15,18 @@ protocol AddOrderProtocol {
     func addOrder()
 }
 
-
 protocol UpdateOrderProtocol {
     func updateOrder(orderRow: Int)
 }
-
 
 protocol AlertFiveOrderProtocol {
     func responseAlertFive(response: Int, tableRow: Int, orderRow: Int)
     func responseAlertChangeTable(response: Int, tableRow: Int)
 }
 
-
 protocol AlertExitProtocol {
     func responseExit(response: Int)
 }
-
-
-
 
 
 
@@ -57,12 +51,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     @IBOutlet weak var labelTableName: UILabel!
 
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
     let coreDataParser = CoreDataParser()
-    
-    var user = User()
-    var settings = Settings()
     
     var tables = [Table]()
     var requests = [Request]()
@@ -74,7 +63,6 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     var oldTableRow = -1
     var isChangeTable = false
-    var fromNet = false
     
     var pageCount: CGFloat = 1
     
@@ -83,15 +71,17 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     var minDistance: CGFloat = 0
     
     var selectedTable = -1
-    
+    var needTables = false
     
     
     override func viewWillAppear(_ animated: Bool) {
         requests = coreDataParser.getRequests()
         setTableSize()
-        getSettings(needTables: true)
-        self.title = user.cafeName + " - Рабочая смена"
-        
+        needTables = true
+        GlobalConstants.alamofireResponse.getSettings(delegate: self)
+//        getSettings(needTables: true)
+        self.title = GlobalConstants.user.cafeName + " - Рабочая смена"
+        GlobalConstants.currentViewController = self
     }
     
     override func viewDidLoad() {
@@ -107,8 +97,8 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (selectedTable >= 0) {
-            if (self.tables[selectedTable].orders.count == settings.maxOrder) {
-                return settings.maxOrder
+            if (self.tables[selectedTable].orders.count == GlobalConstants.settings.maxOrder) {
+                return GlobalConstants.settings.maxOrder
             }
             return self.tables[selectedTable].orders.count + 1
         } else {
@@ -256,7 +246,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
             view.removeFromSuperview()
         }
         
-        var pageCount: CGFloat = CGFloat(self.settings.workspaceCount)
+        var pageCount: CGFloat = CGFloat(GlobalConstants.settings.workspaceCount)
         if pageCount < 1 {
             pageCount = 1
         }
@@ -294,14 +284,14 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     // Нажатие кнопки "Начать/Закрыть смену"
     @IBAction func btnStartClicked(_ sender: Any) {
-        changeWaiterWork(isOpen: settings.open > 0)
+        prepareChangeOpen(isOpen: GlobalConstants.settings.open > 0)
     }
     
     
     // Нажатие на рабочую область
     @objc func tapViewCafe(_ gestureReconizer: UITapGestureRecognizer) {
-        if (settings.open > 0) {
-            if (self.settings.waiter == self.user.id) {
+        if (GlobalConstants.settings.open > 0) {
+            if (GlobalConstants.settings.waiter == GlobalConstants.user.id) {
                 for view in self.scrollView.subviews {
                     if view.tag == gestureReconizer.view?.tag {
                         let tapPoint = gestureReconizer.location(in: view)
@@ -317,7 +307,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
                                 if (row == self.oldTableRow) {
                                     showAlertView(error: "Перенесение заказов на один и тот же столик невозможно")
                                 } else {
-                                    if (tables[oldTableRow].orders.count + tables[row].orders.count > settings.maxOrder) {
+                                    if (tables[oldTableRow].orders.count + tables[row].orders.count > GlobalConstants.settings.maxOrder) {
                                         showAlertView(error: "Невозможно перенести заказы. < Будет превышено максимальное число заказов на столике")
                                     } else {
                                         let text = "Вы действительно хотите перенести заказы из \'" + tables[self.oldTableRow].name + "\' на \'" + self.tables[row].name + "\'"
@@ -351,85 +341,74 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     // MARK: Работа с базой данных
     
     // Получение настроек
-    func getSettings(needTables: Bool) {
-        if (!Connectivity.isConnectedToInternet) {
-            if (needTables) {
-                showAlertView(error: "Отсутствует соедиенение с Интернетом")
-            }
-        } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                self.coreDataParser.saveSettings(settings: self.settings)
-                if (self.settings.open == 0) {
-                    self.deleteAllNotifications()
-                    self.coreDataParser.deleteOrder(cafe: self.user.cafe)
-                    for table in self.tables {
-                        table.orders.removeAll()
-                    }
-                    self.changeButtonValue()
-                }
-                if (needTables) {
-                    self.changeButtonValue()
-                    self.getTables()
-                }
-            }
-        }
-    }
+//    func getSettings(needTables: Bool) {
+//        if (!Connectivity.isConnectedToInternet) {
+//            if (needTables) {
+//                showAlertView(error: "Отсутствует соедиенение с Интернетом")
+//            }
+//        } else {
+//            GlobalConstants.alamofireResponse.getSettings(delegate: <#T##AlamofireViewProtocol#>)
+//            let parameters = ["api_token":  GlobalConstants.user.token, "cafe":String(GlobalConstants.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                GlobalConstants.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: GlobalConstants.user.cafe)
+//                self.coreDataParser.saveSettings(settings: GlobalConstants.settings)
+//                if (GlobalConstants.settings.open == 0) {
+//                    self.deleteAllNotifications()
+//                    self.coreDataParser.deleteOrder(cafe: GlobalConstants.user.cafe)
+//                    for table in self.tables {
+//                        table.orders.removeAll()
+//                    }
+//                    self.changeButtonValue()
+//                }
+//                if (needTables) {
+//                    self.changeButtonValue()
+//                    self.getTables()
+//                }
+//            }
+//        }
+//    }
     
     
     // Получение списка таблиц
-    func getTables() {
-        if (!Connectivity.isConnectedToInternet || !fromNet) {
+    func prepareGetTables() {
+        if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
-            tables = coreDataParser.getTables(cafe: self.user.cafe)
+            tables = coreDataParser.getTables(cafe: GlobalConstants.user.cafe)
             loadScrollView()
-            self.getOrder()
+            self.prepareGetOrders()
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            print ("getTables")
-            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
-                if (self.tables.count > 0) {
-                    self.coreDataParser.deleteTables(cafe: self.user.cafe)
-                    self.coreDataParser.saveTables(tables: self.tables)
-                }
-                self.loadScrollView()
-                self.getOrder()
-            }
+            GlobalConstants.alamofireResponse.getTables(delegate: self)
         }
     }
     
     
     // Получение списка заказов
-    func getOrder() {
-        if (!Connectivity.isConnectedToInternet || !fromNet) {
+    func prepareGetOrders() {
+        if (!Connectivity.isConnectedToInternet) {
             self.mergeOrders(webOrders: [Order]())
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            print ("getOrder")
-            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
-                response in
-                let orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: self.user.cafe)
-                
-                // НУЖНО: добавить ввод обстановки из локальной бд
-                self.mergeOrders(webOrders: orders)
-                
-                if (self.tables.count > 0) {
-                    self.setStatus()
-                }
-            }
+            GlobalConstants.alamofireResponse.getOrders(delegate: self)
+//            let parameters = ["api_token":  GlobalConstants.user.token,
+//                              "cafe":String(GlobalConstants.user.cafe)]
+//            print ("getOrder")
+//            request(urlString.getUrl() + "api/CafeOrder", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let orders = self.jsonParser.parseOrder(JSONData: response.data!, cafe: GlobalConstants.user.cafe)
+//
+//                // НУЖНО: добавить ввод обстановки из локальной бд
+//                self.mergeOrders(webOrders: orders)
+//                if (self.tables.count > 0) {
+//                    self.setStatus()
+//                }
+//            }
         }
     }
     
     
     func mergeOrders(webOrders: [Order]) {
         var orders = webOrders
-        let localOrders = coreDataParser.getOrders(cafe: self.user.cafe)
+        let localOrders = coreDataParser.getOrders(cafe: GlobalConstants.user.cafe)
         if (orders.count > 0) {
             for localOrder in localOrders {
                 if (localOrder.id < 0) {
@@ -480,50 +459,51 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     
     // Смена статуса заведения (Начать/закрыть смену)
-    func changeWaiterWork(isOpen: Bool) {
+    func prepareChangeOpen(isOpen: Bool) {
         print ("changeWaiterWork")
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
-            parameters["waiter"] = String(self.user.id)
-            if (isOpen) {
-                parameters["open"] = "0"
-            } else {
-                parameters["open"] = "1"
-            }
-            request(urlString.getUrl() + "api/CafeChangeOpen", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showAlertView(error: response.text)
-                } else {
-                    self.settings.waiter = self.user.id
-                    if (isOpen) {
-                        self.settings.open = 0
-                        self.deleteAllNotifications()
-                        self.coreDataParser.deleteOrder(cafe: self.user.cafe)
-                        for table in self.tables {
-                            table.orders.removeAll()
-                        }
-                        self.viewOrder.isHidden = true
-                        self.tableView.reloadData()
-                        self.setStatus()
-                    } else {
-                        self.settings.open = 1
-                    }
-                    self.changeButtonValue()
-                }
-            }
+            GlobalConstants.alamofireResponse.changeOpen(isOpen: isOpen, delegate: self)
+//            var parameters = [String: String]()
+//            parameters["api_token"] = GlobalConstants.user.token
+//            parameters["cafe"] = String(GlobalConstants.user.cafe)
+//            parameters["waiter"] = String(GlobalConstants.user.id)
+//            if (isOpen) {
+//                parameters["open"] = "0"
+//            } else {
+//                parameters["open"] = "1"
+//            }
+//            request(urlString.getUrl() + "api/CafeChangeOpen", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showAlertView(error: response.text)
+//                } else {
+//                    GlobalConstants.settings.waiter = GlobalConstants.user.id
+//                    if (isOpen) {
+//                        GlobalConstants.settings.open = 0
+//                        self.deleteAllNotifications()
+//                        self.coreDataParser.deleteOrder(cafe: GlobalConstants.user.cafe)
+//                        for table in self.tables {
+//                            table.orders.removeAll()
+//                        }
+//                        self.viewOrder.isHidden = true
+//                        self.tableView.reloadData()
+//                        self.setStatus()
+//                    } else {
+//                        GlobalConstants.settings.open = 1
+//                    }
+//                    self.changeButtonValue()
+//                }
+//            }
         }
     }
     
     
     // Создание нового заказа
     func createNewOrder(tableRow: Int) {
-        let timeInterval = Double(self.settings.timeStartOrder * 60)
+        let timeInterval = Double(GlobalConstants.settings.timeStartOrder * 60)
         let date = Date(timeIntervalSinceNow: timeInterval)
         
         var cafeNumber = 0
@@ -543,7 +523,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
         order.status = 1
         order.time = date.timeIntervalSince1970
         order.delay_flag = 0
-        order.cafe = self.user.cafe
+        order.cafe = GlobalConstants.user.cafe
         order.idTable = self.tables[tableRow].id
         order.needUpdate = 1
         order.cafeNumber = cafeNumber
@@ -568,11 +548,11 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
         let order = self.tables[tableRow].orders[orderRow]
         self.deleteNotification(order: order)
         
-        var timeInterval = Double(self.settings.timeStartOrder * 60)
+        var timeInterval = Double(GlobalConstants.settings.timeStartOrder * 60)
         if (status == 2) {
-            timeInterval = Double(self.settings.timeFiveMinutes * 60)
+            timeInterval = Double(GlobalConstants.settings.timeFiveMinutes * 60)
         } else if (status > 2) {
-            timeInterval = Double(self.settings.timeWorkTimer * 60)
+            timeInterval = Double(GlobalConstants.settings.timeWorkTimer * 60)
         }
         let date = Date(timeIntervalSinceNow: timeInterval)
         
@@ -684,9 +664,9 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
         let delay = Delay()
         let date = Date()
         delay.id = id
-        delay.waiter = self.user.id
+        delay.waiter = GlobalConstants.user.id
         delay.date = date.timeIntervalSince1970
-        delay.cafe = self.user.cafe
+        delay.cafe = GlobalConstants.user.cafe
         self.coreDataParser.saveDelay(delay: delay)
         self.updateOrderDelay(tableRow: tableRow, orderRow: orderRow)
     }
@@ -802,7 +782,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     // Смена текста кнопки
     func changeButtonValue() {
-        if (self.settings.open == 0) {
+        if (GlobalConstants.settings.open == 0) {
             if (UIDevice.current.userInterfaceIdiom == .pad) {
                 self.buttonStart.title = "Начать смену"
             } else {
@@ -847,15 +827,15 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
                     break
                     
                 case 1:
-                    timerTime = Double(self.settings.timeStartOrder) * 60.0
+                    timerTime = Double(GlobalConstants.settings.timeStartOrder) * 60.0
                     break
                     
                 case 2:
-                    timerTime = Double(self.settings.timeFiveMinutes) * 60.0
+                    timerTime = Double(GlobalConstants.settings.timeFiveMinutes) * 60.0
                     break
                     
                 default:
-                    timerTime = Double(self.settings.timeWorkTimer) * 60.0
+                    timerTime = Double(GlobalConstants.settings.timeWorkTimer) * 60.0
                     break
                 }
                 if (table.orders.count > 1) {
@@ -915,8 +895,8 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
         if (self.tables[tableRow].orders[orderRow].status == 2) {
             let text = "В данный момент вы принесли заказ клиенту. Клиент:"
             showAlertFive(text: text, tableRow: tableRow, orderRow: orderRow, typeWork: -1)
-        } else if (self.tables[tableRow].orders[orderRow].status >= 2 + self.settings.countIterations) {
-            let text = "Вы подходили к клиенту уже " + String(self.settings.countIterations) + " или более раз(а). Клиент:"
+        } else if (self.tables[tableRow].orders[orderRow].status >= 2 + GlobalConstants.settings.countIterations) {
+            let text = "Вы подходили к клиенту уже " + String(GlobalConstants.settings.countIterations) + " или более раз(а). Клиент:"
             showAlertFive(text: text, tableRow: tableRow, orderRow: orderRow, typeWork: -1)
         } else {
             // Обновление статуса заказа
@@ -955,7 +935,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     // Удаление уведомления
     func deleteAllNotifications () {
         let center = UNUserNotificationCenter.current()
-        let localOrders = self.coreDataParser.getOrders(cafe: self.user.cafe)
+        let localOrders = self.coreDataParser.getOrders(cafe: GlobalConstants.user.cafe)
         for order in localOrders {
             center.removePendingNotificationRequests(withIdentifiers: [String(order.timeId)])
         }
@@ -963,7 +943,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     func addAllNotifications () {
         let center = UNUserNotificationCenter.current()
-        let localOrders = self.coreDataParser.getOrders(cafe: self.user.cafe)
+        let localOrders = self.coreDataParser.getOrders(cafe: GlobalConstants.user.cafe)
         for order in localOrders {
             if order.needUpdate != 2 {
                 let content = UNMutableNotificationContent()
@@ -1092,7 +1072,7 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
                     let seconds = difference % 60
                     
                     if (table.orders[currentOrder].delay_flag == 0) {
-                        if (minutes >= self.settings.maxDelay && seconds > 0) {
+                        if (minutes >= GlobalConstants.settings.maxDelay && seconds > 0) {
                             self.addDelay(tableRow: tableRow, orderRow: currentOrder)
                         }
                     }
@@ -1105,13 +1085,15 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     
     @objc func refreshSettings() {
-        getSettings(needTables: false)
+        needTables = false
+        GlobalConstants.alamofireResponse.getSettings(delegate: self)
+        //        getSettings(needTables: false)
     }
     
     
     @objc func uploadData() {
         print ("Попытка залить данные на сервер")
-        let localOrders = coreDataParser.getOrders(cafe: self.user.cafe)
+        let localOrders = coreDataParser.getOrders(cafe: GlobalConstants.user.cafe)
         for order in localOrders {
             if (order.needUpdate > 0) {
                 if (order.needUpdate == 1) {
@@ -1130,65 +1112,66 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     func uploadUpdateOrder(order: Order) {
         if (Connectivity.isConnectedToInternet) {
-            var parameters = [String: String]()
+            var parameters = Parameters()
             if (order.id < 0) {
                 print ("uploadUpdateOrder")
-                parameters["delay_flag"] = String(order.delay_flag)
-                parameters["date"] = String(order.time)
-                parameters["api_token"] = self.user.token
-                parameters["table"] = String(order.idTable)
-                parameters["waiter"] = String(self.user.id)
-                parameters["status"] = String(order.status)
-                parameters["cafe"] = String(self.user.cafe)
-                parameters["number"] = String(order.cafeNumber)
-                
-                request(urlString.getUrl() + "api/AddOrder", method: .post, parameters: parameters).responseJSON {
-                    response in
-                    let response = self.jsonParser.parseAdd(JSONData: response.data!)
-                    if (response.isError) {
-                        self.showAlertView(error: response.text)
-                    } else {
-                        order.id = response.id
-                        order.needUpdate = 0
-                        self.coreDataParser.updateOrder(order: order)
-                        
-                        for table in self.tables {
-                            if (table.id == order.idTable) {
-                                var i = 0
-                                while i < table.orders.count {
-                                    if (table.orders[i].timeId == order.timeId) {
-                                        table.orders[i].id = order.id
-                                        table.orders[i].needUpdate = 0
-                                        break
-                                    }
-                                    i+=1
-                                }
-                                break
-                            }
-                        }
-                    }
-                }
+                parameters["delay_flag"] = order.delay_flag
+                parameters["date"] = order.time
+                parameters["api_token"] = GlobalConstants.user.token
+                parameters["table"] = order.idTable
+                parameters["waiter"] = GlobalConstants.user.id
+                parameters["status"] = order.status
+                parameters["cafe"] = GlobalConstants.user.cafe
+                parameters["number"] = order.cafeNumber
+                GlobalConstants.alamofireResponse.add(order: order, parameters: parameters, delegate: self)
+//                request(urlString.getUrl() + "api/AddOrder", method: .post, parameters: parameters).responseJSON {
+//                    response in
+//                    let response = GlobalConstants.jsonParser.parseAdd(JSONData: response.data!)
+//                    if (response.isError) {
+//                        self.showAlertView(error: response.text)
+//                    } else {
+//                        order.id = response.id
+//                        order.needUpdate = 0
+//                        self.coreDataParser.updateOrder(order: order)
+//
+//                        for table in self.tables {
+//                            if (table.id == order.idTable) {
+//                                var i = 0
+//                                while i < table.orders.count {
+//                                    if (table.orders[i].timeId == order.timeId) {
+//                                        table.orders[i].id = order.id
+//                                        table.orders[i].needUpdate = 0
+//                                        break
+//                                    }
+//                                    i+=1
+//                                }
+//                                break
+//                            }
+//                        }
+//                    }
+//                }
             } else {
                 print ("updateOrder")
-                parameters["api_token"] = self.user.token
-                parameters["cafe"] = String(self.user.cafe)
-                parameters["waiter"] = String(self.user.id)
-                parameters["table"] = String(order.idTable)
-                parameters["date"] = String(order.time)
-                parameters["status"] = String(order.status)
-                parameters["number"] = String(order.cafeNumber)
-                parameters["order"] = String(order.id)
-                parameters["delay_flag"] = String(order.delay_flag)
-                request(urlString.getUrl() + "api/UpdateOrder", method: .post, parameters: parameters).responseJSON {
-                    response in
-                    let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                    if (response.isError) {
-                        //                        self.showEmptyFieldAlert(error: response.text)
-                    } else {
-                        order.needUpdate = 0
-                        self.coreDataParser.updateOrder(order: order)
-                    }
-                }
+                parameters["api_token"] = GlobalConstants.user.token
+                parameters["cafe"] = GlobalConstants.user.cafe
+                parameters["waiter"] = GlobalConstants.user.id
+                parameters["table"] = order.idTable
+                parameters["date"] = order.time
+                parameters["status"] = order.status
+                parameters["number"] = order.cafeNumber
+                parameters["order"] = order.id
+                parameters["delay_flag"] = order.delay_flag
+                GlobalConstants.alamofireResponse.update(order: order, parameters: parameters, delegate: self)
+//                request(urlString.getUrl() + "api/UpdateOrder", method: .post, parameters: parameters).responseJSON {
+//                    response in
+//                    let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                    if (response.isError) {
+//                        //                        self.showEmptyFieldAlert(error: response.text)
+//                    } else {
+//                        order.needUpdate = 0
+//                        self.coreDataParser.updateOrder(order: order)
+//                    }
+//                }
             }
         }
     }
@@ -1200,19 +1183,20 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
         } else {
             if (Connectivity.isConnectedToInternet) {
                 print ("deleteOrder")
-                var parameters = [String: String]()
-                parameters["api_token"] = self.user.token
-                parameters["cafe"] = String(self.user.cafe)
-                parameters["order"] = String(order.id)
-                request(urlString.getUrl() + "api/DeleteOrder", method: .post, parameters: parameters).responseJSON {
-                    response in
-                    let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                    if (response.isError) {
-                        //                        self.showEmptyFieldAlert(error: response.text)
-                    } else {
-                        self.coreDataParser.deleteOrderByTimeId(order: order)
-                    }
-                }
+                var parameters = Parameters()
+                parameters["api_token"] = GlobalConstants.user.token
+                parameters["cafe"] = GlobalConstants.user.cafe
+                parameters["order"] = order.id
+                GlobalConstants.alamofireResponse.delete(order: order, parameters: parameters, delegate: self)
+//                request(urlString.getUrl() + "api/DeleteOrder", method: .post, parameters: parameters).responseJSON {
+//                    response in
+//                    let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                    if (response.isError) {
+//                        //                        self.showEmptyFieldAlert(error: response.text)
+//                    } else {
+//                        self.coreDataParser.deleteOrderByTimeId(order: order)
+//                    }
+//                }
             }
         }
     }
@@ -1223,21 +1207,21 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
             print ("addDelay")
             
             var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
+            parameters["api_token"] = GlobalConstants.user.token
             parameters["cafe"] = String(delay.cafe)
             parameters["waiter"] = String(delay.waiter)
             parameters["date"] = String(delay.date)
-            
-            request(urlString.getUrl() + "api/AddDelay", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseAdd(JSONData: response.data!)
-                if (response.isError) {
-                    print ("Добавление косяка неудачно")
-                } else {
-                    print ("Добавление косяка успешно")
-                    self.coreDataParser.deleteDelay(delay: delay)
-                }
-            }
+            GlobalConstants.alamofireResponse.add(delay: delay, parameters: parameters, delegate: self)
+//            request(urlString.getUrl() + "api/AddDelay", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseAdd(JSONData: response.data!)
+//                if (response.isError) {
+//                    print ("Добавление косяка неудачно")
+//                } else {
+//                    print ("Добавление косяка успешно")
+//                    self.coreDataParser.deleteDelay(delay: delay)
+//                }
+//            }
         }
     }
     
@@ -1264,3 +1248,119 @@ class VCPWorkDesign: UIViewController, UIScrollViewDelegate, CAAnimationDelegate
     
     
 }
+
+extension VCPWorkDesign: BackEndSettingsProtocol {
+    
+    func returnUpdateSuccess() {}
+    
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+    }
+    
+    func returnSettingsSuccess() {
+        self.coreDataParser.saveSettings(settings: GlobalConstants.settings)
+        if (GlobalConstants.settings.open == 0) {
+            self.deleteAllNotifications()
+            self.coreDataParser.deleteOrder(cafe: GlobalConstants.user.cafe)
+            for table in self.tables {
+                table.orders.removeAll()
+            }
+            self.changeButtonValue()
+        }
+        if (needTables) {
+            self.changeButtonValue()
+            self.prepareGetTables()
+        }
+    }
+    
+}
+
+extension VCPWorkDesign: BackEndTablesProtocol {
+    
+    func returnMy(tables: [Table]) {
+        self.tables.removeAll()
+        self.tables = tables
+        if (self.tables.count > 0) {
+            self.coreDataParser.deleteTables(cafe: GlobalConstants.user.cafe)
+            self.coreDataParser.saveTables(tables: self.tables)
+        }
+        self.loadScrollView()
+        self.prepareGetOrders()
+    }
+    
+    func returnAdd(table: Table) {}
+    func returnDelete(table: Int) {}
+    
+}
+
+extension VCPWorkDesign: BackEndOrdersProtocol {
+    
+    func returnDelete(order: Order) {
+        self.coreDataParser.deleteOrderByTimeId(order: order)
+    }
+    
+    
+    func returnAdd(order: Order) {
+        self.coreDataParser.updateOrder(order: order)
+        for table in self.tables {
+            if (table.id == order.idTable) {
+                var i = 0
+                while i < table.orders.count {
+                    if (table.orders[i].timeId == order.timeId) {
+                        table.orders[i].id = order.id
+                        table.orders[i].needUpdate = 0
+                        break
+                    }
+                    i+=1
+                }
+                break
+            }
+        }
+    }
+    
+    func returnUpdate(order: Order) {
+        self.coreDataParser.updateOrder(order: order)
+    }
+    
+    func returnMy(orders: [Order]) {
+        self.mergeOrders(webOrders: orders)
+        if (self.tables.count > 0) {
+            self.setStatus()
+        }
+    }
+    
+}
+
+extension VCPWorkDesign: BackEndChangeOpenProtocol {
+    
+    func returnSuccess(isOpen: Bool) {
+        if (isOpen) {
+            GlobalConstants.settings.open = 0
+            self.deleteAllNotifications()
+            self.coreDataParser.deleteOrder(cafe: GlobalConstants.user.cafe)
+            for table in self.tables {
+                table.orders.removeAll()
+            }
+            self.viewOrder.isHidden = true
+            self.tableView.reloadData()
+            self.setStatus()
+        } else {
+            GlobalConstants.settings.open = 1
+        }
+        self.changeButtonValue()
+    }
+    
+}
+
+extension VCPWorkDesign: BackEndDelaysProtocol {
+    
+    func returnMy(delays: [Statistic]) {}
+    
+    func returnAdd(delay: Delay) {
+        self.coreDataParser.deleteDelay(delay: delay)
+    }
+    
+    
+}
+

@@ -18,19 +18,12 @@ class VCEditWaiter: UIViewController {
     @IBOutlet weak var textFieldLogin: UITextField!
     @IBOutlet weak var textFieldPassword: UITextField!
     @IBOutlet weak var topConstraint: NSLayoutConstraint!
-    
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
+   
     var isEdit = false
-    var user = User()
     var waiter = Waiter()
-    var settings = Settings()
     
     
     override func viewWillAppear(_ animated: Bool) {
-        
-        
         if (isEdit) {
             btnEdit.title = "Изменить"
             textFieldName.text = waiter.name
@@ -39,6 +32,7 @@ class VCEditWaiter: UIViewController {
         } else {
             btnEdit.title = "Добавить"
         }
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -62,9 +56,9 @@ class VCEditWaiter: UIViewController {
         let waiterValues = checkWaiterData()
         if (waiterValues.count == 4) {
             if (isEdit) {
-                self.editWaiter(id: self.waiter.id, waiterValues: waiterValues)
+                self.prepareEditWaiter(id: self.waiter.id, waiterValues: waiterValues)
             } else {
-                self.addWaiter(waiterValues: waiterValues)
+                self.prepareAddWaiter(waiterValues: waiterValues)
             }
         } else {
             showEmptyFieldAlert(error: "Для добавления нового официанта не заполнены все поля")
@@ -73,53 +67,64 @@ class VCEditWaiter: UIViewController {
     
     // MARK: Работа с базой данных
     
-    func addWaiter(waiterValues: [String]) {
+    func prepareAddWaiter(waiterValues: [String]) {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe),
-                              "name":  waiterValues[0],
-                              "phone":  waiterValues[1],
-                              "login":  waiterValues[2],
-                              "password":  waiterValues[3]]
-            request(urlString.getUrl() + "api/AddWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseAdd(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                   self.showEditCompleteAlert(msg: "Добавление произведено успешно")
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["name"] = waiterValues[0]
+            parameters["phone"] = waiterValues[1]
+            parameters["login"] = waiterValues[2]
+            parameters["password"] = waiterValues[3]
+            GlobalConstants.alamofireResponse.addWaiter(parameters: parameters, delegate: self)
+  
+//            request(urlString.getUrl() + "api/AddWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseAdd(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                   self.showEditCompleteAlert(msg: "Добавление произведено успешно")
+//                }
+//            }
         }
     }
     
     
-    func editWaiter(id: Int, waiterValues: [String]) {
+    func prepareEditWaiter(id: Int, waiterValues: [String]) {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe),
-                              "user":String(id),
-                              "name":  waiterValues[0],
-                              "phone":  waiterValues[1],
-                              "login":  waiterValues[2],
-                              "password":  waiterValues[3]]
-            request(urlString.getUrl() + "api/UpdateWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                    self.showEditCompleteAlert(msg: "Изменение произведено успешно")
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["user"] = id
+            parameters["name"] = waiterValues[0]
+            parameters["phone"] = waiterValues[1]
+            parameters["login"] = waiterValues[2]
+            parameters["password"] = waiterValues[3]
+            
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe),
+//                              "user":String(id),
+//                              "name":  waiterValues[0],
+//                              "phone":  waiterValues[1],
+//                              "login":  waiterValues[2],
+//                              "password":  waiterValues[3]]
+            
+//            request(urlString.getUrl() + "api/UpdateWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                    self.showEditCompleteAlert(msg: "Изменение произведено успешно")
+//                }
+//            }
         }
     }
-    
-    
     
     
     func checkWaiterData() -> [String] {
@@ -158,11 +163,34 @@ class VCEditWaiter: UIViewController {
         alert.addAction(UIAlertAction(title: "ОК", style: UIAlertActionStyle.default, handler: {(action:UIAlertAction!) in
            self.navigationController?.popViewController(animated: true)
         }))
-        
-        
-        
         self.present(alert, animated: true, completion: nil)
     }
     
+}
+
+extension VCEditWaiter: BackEndWaitersProtocol {
+    func returnAddSuccess() {
+        self.showEditCompleteAlert(msg: "Добавление произведено успешно")
+    }
+    
+    func returnUpdateSuccess() {}
+    
+    func returnChangeSuccess() {}
+    
+    func returnDeleteSuccess() {}
+    
+    
+    func returnError(error: String) {
+        self.showEditCompleteAlert(msg: error)
+    }
+    
+    func returnMy(waiters: [Waiter]) {}
+    
     
 }
+
+
+
+
+
+

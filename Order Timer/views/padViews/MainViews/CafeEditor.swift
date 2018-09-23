@@ -28,12 +28,6 @@ class CafeEditor: UIView, UIScrollViewDelegate {
     
     @IBOutlet var tapGestureRecognizer: UITapGestureRecognizer!
     
-    let urlString = UrlString()
-    private let jsonParser = JsonParser()
-    
-    var user = User()
-    var settings = Settings()
-    
     private var selectedRow = 0
     var pageCount: CGFloat = 1
   
@@ -50,14 +44,16 @@ class CafeEditor: UIView, UIScrollViewDelegate {
     var tableType = -1
     var tableSize: CGFloat = 0
     
+    private var isWorkspaceLoad = false
+    private var isTablesLoad = false
+    
 
-//    override func awakeFromNib() {
-//        //        setTableSize()
-//        getTables()
-//    }
     override func layoutSubviews() {
-//        deleteTable(id: 11)
-        self.getTables()
+//        self.prepareGetTables()
+    }
+    
+    func loadData() {
+        self.prepareGetTables()
     }
     
     
@@ -78,40 +74,42 @@ class CafeEditor: UIView, UIScrollViewDelegate {
     }
     
     private func loadScrollView() {
-        for view in self.scrollView.subviews {
-            view.removeFromSuperview()
-        }
-        
-        var pageCount: CGFloat = CGFloat(self.settings.workspaceCount)
-        if pageCount < 1 {
-            pageCount = 1
-        }
-        
-        scrollView.delegate = self
-        scrollView.isPagingEnabled = true
-        scrollView.contentSize = CGSize(width: scrollView.frame.size.width * pageCount, height:  scrollView.frame.size.height)
-        scrollView.showsHorizontalScrollIndicator = false
-        
-        pageControl.numberOfPages = Int(pageCount)
-        pageControl.addTarget(self, action: #selector(self.pageChanged), for: .valueChanged)
-        
-        for i in 0..<Int(pageCount) {
-            print(self.scrollView.frame.size.width)
-            let workspace = UIView()
-            workspace.tag = -(i + 1)
-            print ("Ширина scrollView: \(self.scrollView.frame.size.width)")
-            print ("Длина scrollView: \(self.scrollView.frame.size.height)")
+        if isWorkspaceLoad && isTablesLoad {
+            for view in self.scrollView.subviews {
+                view.removeFromSuperview()
+            }
             
-            let rect = CGRect(origin: CGPoint(x: self.scrollView.frame.size.width * CGFloat(i), y: 0), size: CGSize(width:self.scrollView.frame.size.width, height:self.scrollView.frame.size.height))
-            workspace.frame = rect
+            var pageCount: CGFloat = CGFloat(GlobalConstants.settings.workspaceCount)
+            if pageCount < 1 {
+                pageCount = 1
+            }
             
-            let tap = UITapGestureRecognizer(target: self, action: #selector(self.tapViewCafe(_:)))
-            workspace.addGestureRecognizer(tap)
-            self.scrollView.addSubview(workspace)
-        }
-        
-        for table in self.tables {
-            drawTable(table: table)
+            scrollView.delegate = self
+            scrollView.isPagingEnabled = true
+            scrollView.contentSize = CGSize(width: scrollView.frame.size.width * pageCount, height:  scrollView.frame.size.height)
+            scrollView.showsHorizontalScrollIndicator = false
+            
+            pageControl.numberOfPages = Int(pageCount)
+            pageControl.addTarget(self, action: #selector(self.pageChanged), for: .valueChanged)
+            
+            for i in 0..<Int(pageCount) {
+                print(self.scrollView.frame.size.width)
+                let workspace = UIView()
+                workspace.tag = -(i + 1)
+                print ("Ширина scrollView: \(self.scrollView.frame.size.width)")
+                print ("Длина scrollView: \(self.scrollView.frame.size.height)")
+                
+                let rect = CGRect(origin: CGPoint(x: self.scrollView.frame.size.width * CGFloat(i), y: 0), size: CGSize(width:self.scrollView.frame.size.width, height:self.scrollView.frame.size.height))
+                workspace.frame = rect
+                
+                let tap = UITapGestureRecognizer(target: self, action: #selector(self.tapViewCafe(_:)))
+                workspace.addGestureRecognizer(tap)
+                self.scrollView.addSubview(workspace)
+            }
+            
+            for table in self.tables {
+                drawTable(table: table)
+            }
         }
     }
     
@@ -441,16 +439,17 @@ class CafeEditor: UIView, UIScrollViewDelegate {
     
     // MARK: Работа с базой данных
     
-    private func getTables() {
+    private func prepareGetTables() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
-            }
+            GlobalConstants.alamofireResponse.getTables(delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeTable", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.tables = self.jsonParser.parseTables(JSONData: response.data!, cafe: self.user.cafe)
+//            }
         }
     }
     
@@ -463,36 +462,53 @@ class CafeEditor: UIView, UIScrollViewDelegate {
             let tableX = x / self.scrollView.frame.size.width
             let tableY = y / self.scrollView.frame.size.height
             
-            let parameters = ["api_token":  self.user.token,
-                              "cafe": String(self.user.cafe),
-                              "name": name,
-                              "size": String(describing: size),
-                              "place_x": String(describing: tableX),
-                              "place_y": String(describing: tableY),
-                              "workspace": String(describing: workspace)]
-            request(urlString.getUrl() + "api/AddTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseAdd(JSONData: response.data!)
-                if (response.isError) {
-                    self.showAlertView(error: response.text)
-                } else {
-                    let table = Table()
-                    table.id = response.id
-                    table.name = name
-                    table.x = tableX
-                    table.y = tableY
-                    table.size = size
-                    table.workspace = workspace
-                    self.tables.append(table)
-                    self.drawTable(table: table)
-//                    self.textFieldX.text = ""
-//                    self.textFieldY.text = ""
-                    self.isAddTable = true
-                    table.size = self.tableSize
-                    self.changeBtnAddTableValue()
-                    self.tryAddindTable = false
-                }
-            }
+            let table = Table()
+            table.name = name
+            table.x = tableX
+            table.y = tableY
+            table.size = size
+            table.workspace = workspace
+            
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["name"] = name
+            parameters["size"] = "\(size)"
+            parameters["place_x"] = "\(tableX)"
+            parameters["place_y"] = "\(tableY)"
+            parameters["workspace"] = "\(workspace)"
+            GlobalConstants.alamofireResponse.add(table: table, parameters: parameters, delegate: self)
+            
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe": String(self.user.cafe),
+//                              "name": name,
+//                              "size": String(describing: size),
+//                              "place_x": String(describing: tableX),
+//                              "place_y": String(describing: tableY),
+//                              "workspace": String(describing: workspace)]
+//            request(urlString.getUrl() + "api/AddTable", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseAdd(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showAlertView(error: response.text)
+//                } else {
+//                    let table = Table()
+//                    table.id = response.id
+//                    table.name = name
+//                    table.x = tableX
+//                    table.y = tableY
+//                    table.size = size
+//                    table.workspace = workspace
+//                    self.tables.append(table)
+//                    self.drawTable(table: table)
+////                    self.textFieldX.text = ""
+////                    self.textFieldY.text = ""
+//                    self.isAddTable = true
+//                    table.size = self.tableSize
+//                    self.changeBtnAddTableValue()
+//                    self.tryAddindTable = false
+//                }
+//            }
         }
     }
     
@@ -501,39 +517,45 @@ class CafeEditor: UIView, UIScrollViewDelegate {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe),
-                              "table":String(id)]
-            request(urlString.getUrl() + "api/DeleteTable", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showAlertView(error: response.text)
-                } else {
-                    var i = 0
-                    while (i < self.tables.count) {
-                        if (self.tables[i].id == id) {
-                            if let viewWithTag = self.scrollView.viewWithTag(-self.tables[i].workspace)?.viewWithTag(id)  { //.viewCafe.viewWithTag(id) {
-                                viewWithTag.removeFromSuperview()
-                            } else {
-                                print("Не получилось удалить столик!")
-                            }
-                            self.tables.remove(at: i)
-                            break
-                        }
-                        i += 1
-                    }
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["table"] = id
+            GlobalConstants.alamofireResponse.delete(table: id, parameters: parameters, delegate: self)
+            
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe),
+//                              "table":String(id)]
+//            request(urlString.getUrl() + "api/DeleteTable", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showAlertView(error: response.text)
+//                } else {
+//                    var i = 0
+//                    while (i < self.tables.count) {
+//                        if (self.tables[i].id == id) {
+//                            if let viewWithTag = self.scrollView.viewWithTag(-self.tables[i].workspace)?.viewWithTag(id)  { //.viewCafe.viewWithTag(id) {
+//                                viewWithTag.removeFromSuperview()
+//                            } else {
+//                                print("Не получилось удалить столик!")
+//                            }
+//                            self.tables.remove(at: i)
+//                            break
+//                        }
+//                        i += 1
+//                    }
+//                }
+//            }
         }
     }
     
     
     func setWorkspace(setting: Settings) {
-        settings = setting
+        isWorkspaceLoad = true
         var minWorkspace = 1
-        if (settings.workspaceCount > 1) {
-            minWorkspace = settings.workspaceCount
+        if (GlobalConstants.settings.workspaceCount > 1) {
+            minWorkspace = GlobalConstants.settings.workspaceCount
         }
         for table in tables {
             if table.workspace > minWorkspace {
@@ -564,5 +586,52 @@ class CafeEditor: UIView, UIScrollViewDelegate {
         }
     }
     
+}
+
+extension CafeEditor: BackEndTablesProtocol {
+    
+    func returnDelete(table: Int) {
+        var i = 0
+        while (i < self.tables.count) {
+            if (self.tables[i].id == table) {
+                if let viewWithTag = self.scrollView.viewWithTag(-self.tables[i].workspace)?.viewWithTag(table)  { 
+                    viewWithTag.removeFromSuperview()
+                } else {
+                    print("Не получилось удалить столик!")
+                }
+                self.tables.remove(at: i)
+                break
+            }
+            i += 1
+        }
+    }
+    
+    func returnAdd(table: Table) {
+        self.tables.append(table)
+        self.drawTable(table: table)
+        self.isAddTable = true
+        table.size = self.tableSize
+        self.changeBtnAddTableValue()
+        self.tryAddindTable = false
+    }
+    
+    func returnMy(tables: [Table]) {
+        self.tables = tables
+        isTablesLoad = true
+        loadScrollView()
+    }
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+    }
     
 }
+
+
+
+
+
+
+
+
+

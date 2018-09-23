@@ -266,6 +266,7 @@ class CoreDataParser {
             print ("saveUser - Ошибка: \(error)")
             user.error = "Ошибка при получении данных о пользователе"
         }
+        GlobalConstants.user = user
         return user
     }
     

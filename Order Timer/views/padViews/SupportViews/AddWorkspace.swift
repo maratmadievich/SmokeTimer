@@ -19,17 +19,16 @@ class AddWorkspace: UIView {
     @IBOutlet weak var label2: UILabel!
     @IBOutlet weak var label3: UILabel!
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
     var delegate: ChangeWorkspaceProtocol?
     
-    var user = User()
-    var settings = Settings()
-    
     var isLoad = true
+    var workspaceCount = -1
     
     override func layoutSubviews() {
+        
+    }
+    
+    func loadData() {
         getSettings()
         
         let tap1 = UITapGestureRecognizer(target: self, action: #selector(self.tapView1(_:)))
@@ -45,9 +44,9 @@ class AddWorkspace: UIView {
     
     @objc func tapView1(_ gestureReconizer: UITapGestureRecognizer) {
         if (!isLoad) {
-            if (settings.workspaceCount > 1) {
+            if (GlobalConstants.settings.workspaceCount > 1) {
                 isLoad = true
-                saveSettings(workspaceCount: settings.workspaceCount - 1)
+                saveSettings(workspaceCount: GlobalConstants.settings.workspaceCount - 1)
             }
         }
     }
@@ -55,7 +54,7 @@ class AddWorkspace: UIView {
     
     @objc func tapView2(_ gestureReconizer: UITapGestureRecognizer) {
         if (!isLoad) {
-            if (settings.workspaceCount > 2 || settings.workspaceCount < 2) {
+            if (GlobalConstants.settings.workspaceCount > 2 || GlobalConstants.settings.workspaceCount < 2) {
                 isLoad = true
                 saveSettings(workspaceCount: 2)
             } else {
@@ -68,7 +67,7 @@ class AddWorkspace: UIView {
     
     @objc func tapView3(_ gestureReconizer: UITapGestureRecognizer) {
         if (!isLoad) {
-            if (settings.workspaceCount > 2) {
+            if (GlobalConstants.settings.workspaceCount > 2) {
                 isLoad = true
                 saveSettings(workspaceCount: 2)
             } else {
@@ -80,7 +79,7 @@ class AddWorkspace: UIView {
     
     
     func setLabelValues() {
-        switch settings.workspaceCount {
+        switch GlobalConstants.settings.workspaceCount {
         case 2:
             label1.text = "1"
             label2.text = "2"
@@ -121,18 +120,19 @@ class AddWorkspace: UIView {
         if (!Connectivity.isConnectedToInternet) {
             delegate?.cafeEditorShowAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                if (self.settings.error.count > 0) {
-                    self.delegate?.cafeEditorShowAlert(error: self.settings.error)
-                } else {
-                    self.delegate?.cafeEditorChangeWorkspaceCount(settings: self.settings)
-                }
-                self.isLoad = false
-                self.setLabelValues()
-            }
+            GlobalConstants.alamofireResponse.getSettings(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
+//                if (self.settings.error.count > 0) {
+//                    self.delegate?.cafeEditorShowAlert(error: self.settings.error)
+//                } else {
+//                    self.delegate?.cafeEditorChangeWorkspaceCount(settings: self.settings)
+//                }
+//                self.isLoad = false
+//                self.setLabelValues()
+//            }
         }
     }
     
@@ -142,26 +142,55 @@ class AddWorkspace: UIView {
             delegate?.cafeEditorShowAlert(error: "Отсутствует соедиенение с Интернетом")
             isLoad = false
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe": String(self.user.cafe),
-                              "workspace_count": String(describing: workspaceCount)]
-            request(urlString.getUrl() + "api/CafeUpdate", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.delegate?.cafeEditorShowAlert(error: response.text)
-                } else {
-                    self.settings.workspaceCount = workspaceCount
-                    self.delegate?.cafeEditorChangeWorkspaceCount(settings: self.settings)
-                    self.isLoad = false
-                    self.setLabelValues()
-                }
-            }
+            self.workspaceCount = workspaceCount
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["workspace_count"] = workspaceCount
+            GlobalConstants.alamofireResponse.saveSettings(parameters: parameters, delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe": String(self.user.cafe),
+//                              "workspace_count": String(describing: workspaceCount)]
+//            request(urlString.getUrl() + "api/CafeUpdate", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.delegate?.cafeEditorShowAlert(error: response.text)
+//                } else {
+//                    self.settings.workspaceCount = workspaceCount
+//                    self.delegate?.cafeEditorChangeWorkspaceCount(settings: self.settings)
+//                    self.isLoad = false
+//                    self.setLabelValues()
+//                }
+//            }
         }
+    }
+
+}
+
+extension AddWorkspace: BackEndSettingsProtocol {
+    
+    func returnSettingsSuccess() {
+        workspaceCount = GlobalConstants.settings.workspaceCount
+        self.delegate?.cafeEditorChangeWorkspaceCount(settings: GlobalConstants.settings)
+        self.isLoad = false
+        self.setLabelValues()
+    }
+    
+    func returnUpdateSuccess() {
+        GlobalConstants.settings.workspaceCount = workspaceCount
+        self.delegate?.cafeEditorChangeWorkspaceCount(settings: GlobalConstants.settings)
+        self.isLoad = false
+        self.setLabelValues()
+    }
+    
+    func returnError(error: String) {
+        self.delegate?.cafeEditorShowAlert(error: error)
     }
     
     
-    
-    
-
 }
+
+
+
+

@@ -11,11 +11,16 @@ import UIKit
 
 struct GlobalConstants {
     
-    static var mainAPI: String   = "http://server.smoketimer.ru/"
+    static let jsonParser = JsonParser()
+    static let alamofireResponse = AlamofireResponse()
+    static let mainAPI  = "http://server.smoketimer.ru/"
+    
     static var user = User()
     static var settings = Settings()
     static var tables = [Table]()
-    static let jsonParser = JsonParser()
+    
+    static var isHookNotPaid = false
+    static var currentViewController =  UIViewController()
 }
 
 struct defaultsKeys {

@@ -38,6 +38,10 @@ class SettingsView: UIView, SettingsProtocol {
     
     
     override func layoutSubviews() {
+        
+    }
+    
+    func loadData() {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.separatorStyle = .none
@@ -45,8 +49,8 @@ class SettingsView: UIView, SettingsProtocol {
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         self.addGestureRecognizer(tap)
-        getWaiters(delegate: self)
-        getSettings(delegate: self)
+        GlobalConstants.alamofireResponse.getWaiters(delegate: self)
+        GlobalConstants.alamofireResponse.getSettings(delegate: self)
     }
     
     
@@ -99,7 +103,7 @@ class SettingsView: UIView, SettingsProtocol {
     
     
     func prepareGetWaiters() {
-        getWaiters(delegate: self)
+        GlobalConstants.alamofireResponse.getWaiters(delegate: self)
     }
     
     func prepareSaveSettings() {
@@ -115,7 +119,7 @@ class SettingsView: UIView, SettingsProtocol {
             parameters["timer_count"] = textFieldCountIterations.text!
             parameters["max_order"] = textFieldOrderCount.text!
             parameters["max_delay"] = textFieldDelay.text!
-            saveSettings(parameters: parameters, delegate: self)
+            GlobalConstants.alamofireResponse.saveSettings(parameters: parameters, delegate: self)
         }
     }
     
@@ -146,22 +150,22 @@ extension SettingsView: UITableViewDelegate {}
 extension SettingsView: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        return self.waiters.count
+        return self.waiters.count + 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if (waiters[indexPath.row].id > 0) {
+        if indexPath.row == waiters.count {
+            let cell = Bundle.main.loadNibNamed("RowAddWaiter", owner: self, options: nil)?.first as! TVCAddWaiter
+            cell.backgroundColor = UIColor.clear
+            cell.delegateAddWaiter = delegate
+            return cell
+        } else {
             let cell = Bundle.main.loadNibNamed("RowWaiterDesign", owner: self, options: nil)?.first as! TVCWaiterDesign
             cell.backgroundColor = UIColor.clear
             cell.delegateSettings = self
             cell.waiter = waiters[indexPath.row]
             cell.delegateAddWaiter = delegate
             cell.labelName.text = waiters[indexPath.row].name
-            return cell
-        } else {
-            let cell = Bundle.main.loadNibNamed("RowAddWaiter", owner: self, options: nil)?.first as! TVCAddWaiter
-            cell.backgroundColor = UIColor.clear
-            cell.delegateAddWaiter = delegate
             return cell
         }
     }
@@ -187,12 +191,7 @@ extension SettingsView: UITextFieldDelegate {
     
 }
 
-extension SettingsView: AlamofireViewProtocol {
-    func returnMy(waiters: [Waiter]) {
-        self.waiters = waiters
-        tableView.reloadData()
-    }
-    
+extension SettingsView: BackEndSettingsProtocol {
     
     func returnError(error: String) {
         self.showAlertView(error: error)
@@ -202,4 +201,28 @@ extension SettingsView: AlamofireViewProtocol {
         self.setSettings()
     }
     
+    func returnUpdateSuccess() {
+        self.showAlertView(error: "Изменение прошло успешно")
+    }
+    
 }
+
+extension SettingsView: BackEndWaitersProtocol {
+    
+    func returnMy(waiters: [Waiter]) {
+        self.waiters = waiters
+        tableView.reloadData()
+    }
+    
+    func returnAddSuccess() {}
+    
+    func returnChangeSuccess() {}
+    func returnDeleteSuccess() {}
+}
+
+
+
+
+
+
+

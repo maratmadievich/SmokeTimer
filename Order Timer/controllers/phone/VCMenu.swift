@@ -13,11 +13,12 @@ class VCMenu: UIViewController, AlertExitProtocol {
     @IBOutlet weak var viewAlert: UIView!
     @IBOutlet weak var labelAlert: UILabel!
     
-    let urlString = UrlString()
-    
-    var user = User()
     var error = "Отсутствует соединение с Интернетом"
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        GlobalConstants.currentViewController = self
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,19 +71,6 @@ class VCMenu: UIViewController, AlertExitProtocol {
     
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if (segue.identifier == "showSettings") {
-            let vc = segue.destination as! VCSettings
-            vc.user = self.user
-        }
-        if (segue.identifier == "showStatistic") {
-            let vc = segue.destination as! VCStatistic
-            vc.user = self.user
-        }
-        if (segue.identifier == "showNow") {
-            let vc = segue.destination as! VCNowTable
-            vc.user = self.user
-        }
         let backItem = UIBarButtonItem()
         backItem.title = ""
         backItem.tintColor = UIColor.white

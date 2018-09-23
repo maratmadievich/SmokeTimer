@@ -24,11 +24,7 @@ class AddWaiter: UIView, UITextFieldDelegate {
     
     @IBOutlet weak var btnCancel: UIButton!
     @IBOutlet weak var btnAdd: UIButton!
-    
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
-    var user = User()
+
     var waiter = Waiter()
     
     
@@ -69,7 +65,7 @@ class AddWaiter: UIView, UITextFieldDelegate {
             if waiter.id > 0 {
                 editWaiter(id: waiter.id, waiterValues: waiterValues)
             } else {
-                 addWaiter(waiterValues: waiterValues)
+                 prepareAddWaiter(waiterValues: waiterValues)
             }
         } else {
             showAlertView(error: "Для добавления нового официанта не заполнены все поля")
@@ -105,33 +101,41 @@ class AddWaiter: UIView, UITextFieldDelegate {
     
     
     
-    func addWaiter(waiterValues: [String]) {
+    func prepareAddWaiter(waiterValues: [String]) {
         if (!Connectivity.isConnectedToInternet) {
             self.showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe),
-                              "name":  waiterValues[0],
-//                              "phone":  waiterValues[1],
-                              "login":  waiterValues[1],
-                              "password":  waiterValues[2]]
-            request(urlString.getUrl() + "api/AddWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseAdd(JSONData: response.data!)
-                if (response.isError) {
-                    self.showAlertView(error: response.text)
-                } else {
-                    let waiter = Waiter()
-                    waiter.id = response.id
-                    waiter.name = waiterValues[0]
-//                    waiter.phone = waiterValues[1]
-                    waiter.login = waiterValues[1]
-                    waiter.password = waiterValues[2]
-                    self.delegate?.reloadWaiters()
-                    self.removeFromSuperview()
-                    
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["name"] = waiterValues[0]
+            parameters["login"] = waiterValues[1]
+            parameters["password"] = waiterValues[2]
+            GlobalConstants.alamofireResponse.addWaiter(parameters: parameters, delegate: self)
+            
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe),
+//                              "name":  waiterValues[0],
+////                              "phone":  waiterValues[1],
+//                              "login":  waiterValues[1],
+//                              "password":  waiterValues[2]]
+//            request(urlString.getUrl() + "api/AddWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseAdd(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showAlertView(error: response.text)
+//                } else {
+//                    let waiter = Waiter()
+//                    waiter.id = response.id
+//                    waiter.name = waiterValues[0]
+////                    waiter.phone = waiterValues[1]
+//                    waiter.login = waiterValues[1]
+//                    waiter.password = waiterValues[2]
+//                    self.delegate?.reloadWaiters()
+//                    self.removeFromSuperview()
+//
+//                }
+//            }
         }
     }
     
@@ -140,23 +144,31 @@ class AddWaiter: UIView, UITextFieldDelegate {
         if (!Connectivity.isConnectedToInternet) {
             self.showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe),
-                              "user":String(id),
-                              "name":  waiterValues[0],
-//                              "phone":  waiterValues[1],
-                              "login":  waiterValues[1],
-                              "password":  waiterValues[2]]
-            request(urlString.getUrl() + "api/UpdateWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showAlertView(error: response.text)
-                } else {
-                    self.delegate?.reloadWaiters()
-                    self.removeFromSuperview()
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["user"] = id
+            parameters["name"] = waiterValues[0]
+            parameters["login"] = waiterValues[1]
+            parameters["password"] = waiterValues[2]
+            GlobalConstants.alamofireResponse.updateWaiter(parameters: parameters, delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe),
+//                              "user":String(id),
+//                              "name":  waiterValues[0],
+////                              "phone":  waiterValues[1],
+//                              "login":  waiterValues[1],
+//                              "password":  waiterValues[2]]
+//            request(urlString.getUrl() + "api/UpdateWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showAlertView(error: response.text)
+//                } else {
+//                    self.delegate?.reloadWaiters()
+//                    self.removeFromSuperview()
+//                }
+//            }
         }
     }
     
@@ -181,3 +193,35 @@ class AddWaiter: UIView, UITextFieldDelegate {
     }
 
 }
+
+extension AddWaiter: BackEndWaitersProtocol {
+    
+    func returnAddSuccess() {
+        showAlertView(error: "Добавление произведено успешно")
+        self.delegate?.reloadWaiters()
+        self.removeFromSuperview()
+    }
+    
+    func returnUpdateSuccess() {
+        showAlertView(error: "Изменение произведено успешно")
+        self.delegate?.reloadWaiters()
+        self.removeFromSuperview()
+    }
+    
+    
+    func returnChangeSuccess() {}
+    
+    func returnDeleteSuccess() {}
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+    }
+    
+    func returnMy(waiters: [Waiter]) {}
+    
+    
+}
+
+
+
+

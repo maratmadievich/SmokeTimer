@@ -16,12 +16,6 @@ class VCWaiters: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     @IBOutlet weak var btnDelete: UIButton!
     @IBOutlet weak var btnEdit: UIButton!
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
-    var user = User()
-    var settings = Settings()
-    
     var waiters = [Waiter]()
     
     var isEdit = false
@@ -29,8 +23,9 @@ class VCWaiters: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
     
     override func viewWillAppear(_ animated: Bool) {
-        getWaiters()
+        prepareGetWaiters()
         setButtonHidden(isHidden: true)
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -88,39 +83,45 @@ class VCWaiters: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
     // MARK: Работа с базой данных
     
-    func getWaiters() {
+    func prepareGetWaiters() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
-                self.tableView.reloadData()
-            }
+            GlobalConstants.alamofireResponse.getWaiters(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
+//                self.tableView.reloadData()
+//            }
         }
     }
     
     
-    func deleteWaiter() {
+    func prepareDeleteWaiter() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe":String(self.user.cafe),
-                              "user":String(self.waiters[(self.selectedIndexPath?.row)!].id)]
-            request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                    self.setButtonHidden(isHidden: true)
-                    self.tableView.deselectRow(at: self.selectedIndexPath!, animated: true)
-                    self.waiters.remove(at: self.selectedIndexPath!.row)
-                }
-                self.tableView.reloadData()
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["user"] = self.waiters[(self.selectedIndexPath?.row)!].id
+            GlobalConstants.alamofireResponse.deleteWaiter(parameters: parameters, delegate: self)
+//            let parameters = ["api_token":  self.user.token,
+//                              "cafe":String(self.user.cafe),
+//                              "user":String(self.waiters[(self.selectedIndexPath?.row)!].id)]
+//            request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                    self.setButtonHidden(isHidden: true)
+//                    self.tableView.deselectRow(at: self.selectedIndexPath!, animated: true)
+//                    self.waiters.remove(at: self.selectedIndexPath!.row)
+//                }
+//                self.tableView.reloadData()
+//            }
         }
     }
     
@@ -136,8 +137,6 @@ class VCWaiters: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "showEdit") {
             let vc = segue.destination as! VCEditWaiter
-            vc.user = self.user
-            vc.settings = self.settings
             if (isEdit) {
                 vc.isEdit = isEdit
                 vc.waiter = self.waiters[(self.selectedIndexPath?.row)!]
@@ -162,10 +161,42 @@ class VCWaiters: UIViewController, UITableViewDelegate, UITableViewDataSource  {
         let alert = UIAlertController(title: "Внимание", message: "Вы действительно хотите удалить официанта " + self.waiters[(selectedIndexPath?.row)!].name, preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Отмена", style: UIAlertActionStyle.default, handler: nil))
         alert.addAction(UIAlertAction(title: "Удалить", style: UIAlertActionStyle.default, handler: {(action:UIAlertAction!) in
-            self.deleteWaiter()
+            self.prepareDeleteWaiter()
         }))
         self.present(alert, animated: true, completion: nil)
     }
     
     
 }
+
+extension VCWaiters: BackEndWaitersProtocol {
+    
+    func returnAddSuccess() {}
+    
+    func returnUpdateSuccess() {}
+    
+    
+    func returnMy(waiters: [Waiter]) {
+        self.waiters = waiters
+        self.tableView.reloadData()
+    }
+    
+    func returnDeleteSuccess() {
+        self.setButtonHidden(isHidden: true)
+        self.tableView.deselectRow(at: self.selectedIndexPath!, animated: true)
+        self.waiters.remove(at: self.selectedIndexPath!.row)
+        self.tableView.reloadData()
+    }
+    
+    func returnError(error: String) {
+        showEmptyFieldAlert(error: error)
+    }
+    
+    func returnChangeSuccess() {}
+    
+}
+
+
+
+
+

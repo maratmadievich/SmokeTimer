@@ -8,6 +8,7 @@
 
 import UIKit
 import Alamofire
+import SwiftyJSON
 
 class WaiterView: UITableViewCell {
 
@@ -17,13 +18,8 @@ class WaiterView: UITableViewCell {
     @IBOutlet weak var labelName: UILabel!
     @IBOutlet weak var btnDelete: UIButton!
     
-    let urlString = UrlString()
-    
     var delegateAddWaiter: AddWaiterProtocol?
     var delegateSettings: SettingsProtocol?
-    
-    var token = ""
-    var cafe = 0
     var waiter = Waiter()
     
     
@@ -46,21 +42,45 @@ class WaiterView: UITableViewCell {
         if (!Connectivity.isConnectedToInternet) {
 //            self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = token
-            parameters["cafe"] = String(cafe)
-            parameters["user"] = String(waiter.id)
-           
-            request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = GlobalConstants.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.delegateSettings?.showAlertView(error: response.text)
-                } else {
-                    self.delegateSettings?.prepareGetWaiters()
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["user"] = waiter.id
+            GlobalConstants.alamofireResponse.deleteWaiter(parameters: parameters, delegate: self)
+            
+//            request(urlString.getUrl() + "api/DeleteWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = GlobalConstants.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.delegateSettings?.showAlertView(error: response.text)
+//                } else {
+//                    self.delegateSettings?.prepareGetWaiters()
+//                }
+//            }
         }
     }
     
 }
+
+extension WaiterView: BackEndWaitersProtocol {
+    
+    func returnUpdateSuccess() {}
+    
+    func returnDeleteSuccess() {
+        self.delegateSettings?.prepareGetWaiters()
+    }
+    
+    func returnError(error: String) {
+        self.delegateSettings?.showAlertView(error: error)
+    }
+    
+    func returnAddSuccess() {}
+    func returnChangeSuccess() {}
+    func returnMy(waiters: [Waiter]) {}
+    
+}
+
+
+
+
+

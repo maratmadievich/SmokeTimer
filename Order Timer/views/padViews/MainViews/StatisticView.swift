@@ -19,38 +19,32 @@ class StatisticView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVi
     
     @IBOutlet weak var fsCalendar: FSCalendar!
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
     var isByChecked = false
     var isSinseChecked = false
     
-    var user = User()
     var statistic = [Statistic]()
-    
-    
-    
-//    override func awakeFromNib() {
-//        fsCalendar.delegate = self
-//        fsCalendar.dataSource = self
-//    }
 
     
     override func layoutSubviews() {
+        
+    }
+    
+    
+    func loadData() {
         tableView.delegate = self
         tableView.dataSource = self
         
         fsCalendar.delegate = self
         fsCalendar.dataSource = self
-
+        
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
         
-//        fsCalendar.appearance.headerDateFormat = DateFormatter.dateFormat(fromTemplate: "MMMM yyyy", options: 0, locale: NSLocale(localeIdentifier: "ru_RU") as Locale)
+        //        fsCalendar.appearance.headerDateFormat = DateFormatter.dateFormat(fromTemplate: "MMMM yyyy", options: 0, locale: NSLocale(localeIdentifier: "ru_RU") as Locale)
         fsCalendar.locale = Locale(identifier: "ru_RU")
         fsCalendar.calendarHeaderView.calendar.locale = Locale(identifier: "ru_RU")
         
-        getStatistic()
+        prepareGetStatistic()
     }
     
     
@@ -95,28 +89,39 @@ class StatisticView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVi
     
     @IBAction func btnSetClicked(_ sender: Any) {
         self.endEditing(true)
-        getStatistic()
+        prepareGetStatistic()
     }
     
     
-    func getStatistic() {
+    func prepareGetStatistic() {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
             if (fsCalendar.selectedDates.count == 1) {
-                parameters["date_from"] = String(describing: (fsCalendar.selectedDates[0].timeIntervalSince1970))
+                parameters["date_from"] = fsCalendar.selectedDates[0].timeIntervalSince1970
             } else if (fsCalendar.selectedDates.count > 1)  {
-                parameters["date_from"] = String(describing: (self.getMinDate().timeIntervalSince1970))
-                parameters["date_to"] = String(describing: (self.getMaxDate().timeIntervalSince1970))
+                parameters["date_from"] = self.getMinDate().timeIntervalSince1970
+                parameters["date_to"] = self.getMaxDate().timeIntervalSince1970
             }
-            request(urlString.getUrl() + "api/CafeDelay", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.statistic = self.jsonParser.parseDelay(JSONData: response.data!)
-                self.tableView.reloadData()
-            }
+            GlobalConstants.alamofireResponse.getDelays(parameters: parameters, delegate: self)
+            
+            
+//            parameters["api_token"] = self.user.token
+//            parameters["cafe"] = String(self.user.cafe)
+//            if (fsCalendar.selectedDates.count == 1) {
+//                parameters["date_from"] = String(describing: (fsCalendar.selectedDates[0].timeIntervalSince1970))
+//            } else if (fsCalendar.selectedDates.count > 1)  {
+//                parameters["date_from"] = String(describing: (self.getMinDate().timeIntervalSince1970))
+//                parameters["date_to"] = String(describing: (self.getMaxDate().timeIntervalSince1970))
+//            }
+//            request(urlString.getUrl() + "api/CafeDelay", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.statistic = self.jsonParser.parseDelay(JSONData: response.data!)
+//                self.tableView.reloadData()
+//            }
         }
     }
     
@@ -163,3 +168,18 @@ class StatisticView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableVi
     }
     
 }
+
+extension StatisticView: BackEndDelaysProtocol {
+    func returnMy(delays: [Statistic]) {
+        self.statistic = delays
+        self.tableView.reloadData()
+    }
+    
+    func returnAdd(delay: Delay) {}
+    func returnError(error: String) {}
+    
+    
+}
+
+
+

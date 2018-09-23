@@ -19,18 +19,14 @@ class VCChangeWaiter: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var bottomConstraint2: NSLayoutConstraint!
     
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
-    var user = User()
-    var settings = Settings()
     var selectedIndexPath = IndexPath()
     
     var waiters = [Waiter]()
     
     
     override func viewWillAppear(_ animated: Bool) {
-        getWaiters()
+        prepareGetWaiters()
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -60,7 +56,7 @@ class VCChangeWaiter: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
     @objc func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (self.settings.open > 0 ) {
+        if (GlobalConstants.settings.open > 0 ) {
             btnChange.isEnabled = true
             selectedIndexPath = indexPath
         }
@@ -80,16 +76,17 @@ class VCChangeWaiter: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: Работа с базой данных
     
     // Получение списка официантов
-    func getWaiters() {
+    func prepareGetWaiters() {
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
-                self.tableView.reloadData()
-            }
+            GlobalConstants.alamofireResponse.getWaiters(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            request(urlString.getUrl() + "api/CafeWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.waiters = self.jsonParser.parseWaiters(JSONData: response.data!)
+//                self.tableView.reloadData()
+//            }
         }
     }
     
@@ -99,23 +96,24 @@ class VCChangeWaiter: UIViewController, UITableViewDelegate, UITableViewDataSour
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
-            parameters["waiter"] = String(self.user.id)
-            parameters["open"] = "0"
-            
-            request(urlString.getUrl() + "api/CafeChangeOpen", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                    self.settings.waiter = self.user.id
-                    self.settings.open = 0
-                    let _ = self.navigationController?.popViewController(animated: true)
-                }
-            }
+            GlobalConstants.alamofireResponse.changeOpen(isOpen: true, delegate: self)
+//            var parameters = [String: String]()
+//            parameters["api_token"] = self.user.token
+//            parameters["cafe"] = String(self.user.cafe)
+//            parameters["waiter"] = String(self.user.id)
+//            parameters["open"] = "0"
+//
+//            request(urlString.getUrl() + "api/CafeChangeOpen", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                    self.settings.waiter = self.user.id
+//                    self.settings.open = 0
+//                    let _ = self.navigationController?.popViewController(animated: true)
+//                }
+//            }
         }
     }
     
@@ -125,21 +123,23 @@ class VCChangeWaiter: UIViewController, UITableViewDelegate, UITableViewDataSour
         if (!Connectivity.isConnectedToInternet) {
             self.showEmptyFieldAlert(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
-            parameters["waiter"] = String(self.waiters[self.selectedIndexPath.row].id)
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["waiter"] = self.waiters[self.selectedIndexPath.row].id
+            GlobalConstants.alamofireResponse.changeWaiter(parameters: parameters, delegate: self)
             
-            request(urlString.getUrl() + "api/CafeChangeWaiter", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showEmptyFieldAlert(error: response.text)
-                } else {
-                    self.settings.waiter = self.waiters[self.selectedIndexPath.row].id
-                    self.tableView.deselectRow(at: self.selectedIndexPath, animated: true)
-                }
-            }
+            
+//            request(urlString.getUrl() + "api/CafeChangeWaiter", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showEmptyFieldAlert(error: response.text)
+//                } else {
+//                    self.settings.waiter = self.waiters[self.selectedIndexPath.row].id
+//                    self.tableView.deselectRow(at: self.selectedIndexPath, animated: true)
+//                }
+//            }
         }
     }
     
@@ -155,3 +155,44 @@ class VCChangeWaiter: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     
 }
+
+extension VCChangeWaiter: BackEndWaitersProtocol {
+    
+    func returnAddSuccess() {}
+    
+    func returnUpdateSuccess() {}
+    
+    
+    func returnMy(waiters: [Waiter]) {
+        self.waiters = waiters
+        self.tableView.reloadData()
+    }
+    
+    func returnChangeSuccess() {
+        GlobalConstants.settings.waiter = self.waiters[self.selectedIndexPath.row].id
+        self.tableView.deselectRow(at: self.selectedIndexPath, animated: true)
+    }
+    
+    func returnDeleteSuccess() {}
+    
+    func returnError(error: String) {
+        showEmptyFieldAlert(error: error)
+    }
+    
+}
+
+extension VCChangeWaiter: BackEndChangeOpenProtocol {
+    
+    func returnSuccess(isOpen: Bool) {
+        GlobalConstants.settings.waiter = GlobalConstants.user.id
+        GlobalConstants.settings.open = 0
+        let _ = self.navigationController?.popViewController(animated: true)
+    }
+    
+}
+
+
+
+
+
+

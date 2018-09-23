@@ -18,9 +18,6 @@ class AlertFive: UIView {
     @IBOutlet weak var btnTwo: ButtonCornerView!
     @IBOutlet weak var btnThree: ButtonCornerView!
     
-    
-    let jsonParser = JsonParser()
-    
     var tableRow = -1
     var orderRow = -1
     

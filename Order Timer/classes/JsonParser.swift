@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import Foundation
+import Alamofire
+import SwiftyJSON
 
 class JsonParser {
     
@@ -18,260 +19,209 @@ class JsonParser {
     }
     
     
-    public func parseUser (JSONData: Data) -> User {
+    public func parseUser (json: JSON) {
         print ("parseUser:")
-        let user = User()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print ("auth_response:\(json)")
-            if let error = json["error"] as? String {
-                user.error = error
-            } else {
-                if let token = json["api_token"] as? String {
-                    user.token = token
-                    GlobalConstants.user.token = token
-                }
-                if let cafeName = json["cafe_name"] as? String {
-                    user.cafeName = cafeName
-                    GlobalConstants.user.cafeName = cafeName
-                }
-                if let name = json["name"] as? String {
-                    user.name = name
-                    GlobalConstants.user.name = name
-                }
-                if let id = json["id"] as? Int {
-                    user.id = id
-                    GlobalConstants.user.id = id
-                }
-                if let role = json["role"] as? Int {
-                    user.role = role
-                    GlobalConstants.user.role = role
-                }
-                if let cafe = json["cafe"] as? Int {
-                    user.cafe = cafe
-                    GlobalConstants.user.cafe = cafe
-                } else {
-                    user.cafe = 1
-                    GlobalConstants.user.cafe = 1
-                }
-                if let phone = json["phone"] as? String {
-                    user.phone = phone
-                    GlobalConstants.user.phone = phone
-                }
-                if let paid = json["paid"] as? Int {
-                    user.paid = paid
-                    GlobalConstants.user.paid = paid
-                }
-            }
+        if let token = json["api_token"].string {
+            GlobalConstants.user.token = token
         }
-        catch {
-             user.error = "В данный момент на устройстве существуют проблемы с сетью"
+        if let cafeName = json["cafe_name"].string {
+            GlobalConstants.user.cafeName = cafeName
         }
-        return user
+        if let name = json["name"].string {
+            GlobalConstants.user.name = name
+        }
+        if let id = json["id"].int {
+            GlobalConstants.user.id = id
+        }
+        if let role = json["role"].int {
+            GlobalConstants.user.role = role
+        }
+        if let cafe = json["cafe"].int {
+            GlobalConstants.user.cafe = cafe
+        } else {
+            GlobalConstants.user.cafe = 1
+        }
+        if let phone = json["phone"].string {
+            GlobalConstants.user.phone = phone
+        }
+        if let paid = json["paid"].int {
+            GlobalConstants.user.paid = paid
+        }
     }
     
     
-    public func parseSettings (JSONData: Data, cafe: Int) -> Settings {
-        let settings = Settings()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print ("settings_response:\(json)")
-            if let error = json["error"] as? String {
-                settings.error = error
-            } else {
-                if let request = json["success"] as? [String: Any] {
-                    if let name = request["name"] as? String {
-                       settings.name = name
-                    }
-                    if let timeStartOrder = request["order_timer"] as? Int {
-                        settings.timeStartOrder = timeStartOrder
-                    }
-                    if let timeFiveMinutes = request["minutes_timer"] as? Int {
-                        settings.timeFiveMinutes = timeFiveMinutes
-                    }
-                    if let timeWorkTimer = request["work_timer"] as? Int {
-                        settings.timeWorkTimer = timeWorkTimer
-                    }
-                    if let countIterations = request["timer_count"] as? Int {
-                        settings.countIterations = countIterations
-                    }
-                    if let maxOrder = request["max_order"] as? Int {
-                        settings.maxOrder = maxOrder
-                    }
-                    if let maxDelay = request["max_delay"] as? Int {
-                        settings.maxDelay = maxDelay
-                    }
-                    if let height = request["height"] as? CGFloat {
-                        settings.height = height
-                    }
-                    if let width = request["width"] as? CGFloat {
-                        settings.width = width
-                    }
-                    if let open = request["open"] as? Int {
-                        settings.open = open
-                    }
-                    if let waiter = request["waiter"] as? Int {
-                        settings.waiter = waiter
-                    }
-                    if let workspace = request["workspace_count"] as? Int {
-                        settings.workspaceCount = workspace
-                    }
-                    settings.cafe = cafe
-                }
-            }
+    public func parseSettings (data: [String: JSON]) {
+        print("ParseSettings:")
+        if let name = data["name"]?.string {
+            GlobalConstants.settings.name = name
         }
-        catch {
-            print(error)
+        if let timeStartOrder = data["order_timer"]?.int {
+            GlobalConstants.settings.timeStartOrder = timeStartOrder
         }
-        return settings
+        if let timeFiveMinutes = data["minutes_timer"]?.int {
+            GlobalConstants.settings.timeFiveMinutes = timeFiveMinutes
+        }
+        if let timeWorkTimer = data["work_timer"]?.int {
+            GlobalConstants.settings.timeWorkTimer = timeWorkTimer
+        }
+        if let countIterations = data["timer_count"]?.int {
+            GlobalConstants.settings.countIterations = countIterations
+        }
+        if let maxOrder = data["max_order"]?.int {
+            GlobalConstants.settings.maxOrder = maxOrder
+        }
+        if let maxDelay = data["max_delay"]?.int {
+            GlobalConstants.settings.maxDelay = maxDelay
+        }
+        if let height = data["height"]?.float {
+            GlobalConstants.settings.height = CGFloat(height)
+        }
+        if let width = data["width"]?.float {
+            GlobalConstants.settings.width = CGFloat(width)
+        }
+        if let open = data["open"]?.int {
+            GlobalConstants.settings.open = open
+        }
+        if let waiter = data["waiter"]?.int {
+            GlobalConstants.settings.waiter = waiter
+        }
+        if let workspace = data["workspace_count"]?.int {
+            GlobalConstants.settings.workspaceCount = workspace
+        }
+        GlobalConstants.settings.cafe = GlobalConstants.user.cafe
     }
     
     
-    public func parseWaiters (JSONData: Data) -> [Waiter] {
+    public func parseWaiters (data: [JSON]) -> [Waiter] {
         print ("parseWaiters:")
         var waiters = [Waiter]()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print (json)
-            if let error = json["error"] as? String {
-                print ("Ошибка: " + error)
-            } else {
-                
-                if let waitersJson = json["success"] as? [[String: Any]] {
-                    print (waitersJson)
-                    for waiterJson in waitersJson {
-                        let waiter = Waiter()
-                        print ("\n waiter \n")
-                        if let id = waiterJson["id"] as? Int {
-                            print("id " + String(id))
-                            waiter.id = id
-                        }
-                        if let name = waiterJson["name"] as? String {
-                            print("name " + name)
-                            waiter.name = name
-                        }
-                        if let login = waiterJson["login"] as? String {
-                            print("login " + login)
-                            waiter.login = login
-                        }
-                        if let phone = waiterJson["phone"] as? String {
-                            print("phone " + String(phone))
-                            waiter.phone = phone
-                        }
-                        waiters.append(waiter)
-                    }
-                }
+        for waiterJson in data {
+            let waiter = Waiter()
+            if let id = waiterJson["id"].int {
+                print("id " + String(id))
+                waiter.id = id
             }
-        } catch {
-            print(error)
+            if let name = waiterJson["name"].string {
+                print("name " + name)
+                waiter.name = name
+            }
+            if let login = waiterJson["login"].string {
+                print("login " + login)
+                waiter.login = login
+            }
+            if let phone = waiterJson["phone"].string {
+                print("phone " + String(phone))
+                waiter.phone = phone
+            }
+            waiters.append(waiter)
         }
         return waiters
     }
     
     
-    public func parseAdd (JSONData: Data) -> CafeResponse {
+    public func parseAdd (json: JSON) -> CafeResponse {
         print ("parseAdd:")
         let response = CafeResponse()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print (json)
-            if let error = json["error"] as? String {
-                print ("Ошибка: " + error)
-                response.isError = true
-                response.text = error
-            } else {
-                response.isError = false
-                if let id = json["success"] as? Int {
-                    response.id = id
-                }
-            }
-        } catch {
-            print(error)
+        if let error = json["error"].string {
+            print ("Ошибка: " + error)
             response.isError = true
-            response.text = "Ошибка при изменении базы данных. Обратитесь к Администратору приложения"
+            response.text = error
+        } else {
+            response.isError = false
+            if let id = json["success"].int {
+                response.id = id
+            }
         }
         return response
     }
     
     
-    public func parseEditDelete (JSONData: Data) -> CafeResponse {
+    public func parseEditDelete (json: JSON) -> CafeResponse {
         print ("parseEditDelete:")
         let response = CafeResponse()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print (json)
-            if let error = json["error"] as? String {
-                print ("Ошибка: " + error)
-                response.isError = true
-                response.text = error
-            } else {
-                response.isError = false
-                if let text = json["success"] as? String {
-                    response.text = text
-                }
-            }
-        } catch {
-            print(error)
+        if let error = json["error"].string {
+            print ("Ошибка: " + error)
             response.isError = true
-            response.text = "Ошибка при изменении базы данных. Обратитесь к Администратору приложения"
+            response.text = error
+        } else {
+            response.isError = false
+            if let text = json["success"].string {
+                response.text = text
+            }
         }
         return response
     }
     
     
-    public func parseTables (JSONData: Data, cafe: Int) -> [Table] {
+    public func parseTables (data: [JSON]) -> [Table] {
         print ("parseTables:")
         var tables = [Table]()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print (json)
-            if let error = json["error"] as? String {
-                print ("Ошибка: " + error)
-            } else {
-                
-                if let tablesJson = json["success"] as? [[String: Any]] {
-                    print (tablesJson)
-                    for tableJson in tablesJson {
-                        let table = Table()
-                        if let id = tableJson["id"] as? Int {
-                            print("id " + String(id))
-                            table.id = id
-                        }
-                        if let name = tableJson["name"] as? String {
-                            print("name " + name)
-                            table.name = name
-                        }
-                        if let x = tableJson["place_x"] as? CGFloat {
-                            print("x " + String(describing: x))
-                            table.x = x
-                        }
-                        if let y = tableJson["place_y"] as? CGFloat {
-                            print("y " + String(describing: y))
-                            table.y = y
-                        }
-                        if let size = tableJson["size"] as? CGFloat {
-                            print("size " + String(describing: size))
-                            table.size = size
-                        }
-                        if let workcpace = tableJson["workspace"] as? Int {
-                            print("workcpace " + String(describing: workcpace))
-                            table.workspace = workcpace
-                        }
-                        table.cafe = cafe
-                        tables.append(table)
-                    }
-                }
+        for tableJson in data {
+            let table = Table()
+            if let id = tableJson["id"].int {
+                print("id " + String(id))
+                table.id = id
             }
-        } catch {
-            print(error)
+            if let name = tableJson["name"].string{
+                print("name " + name)
+                table.name = name
+            }
+            if let x = tableJson["place_x"].double {
+                print("x " + String(describing: x))
+                table.x = CGFloat(x)
+            }
+            if let y = tableJson["place_y"].double {
+                print("y " + String(describing: y))
+                table.y = CGFloat(y)
+            }
+            if let size = tableJson["size"].double {
+                print("size " + String(describing: size))
+                table.size = CGFloat(size)
+            }
+            if let workcpace = tableJson["workspace"].int {
+                print("workcpace " + String(describing: workcpace))
+                table.workspace = workcpace
+            }
+            table.cafe = GlobalConstants.user.cafe
+            tables.append(table)
         }
         return tables
+    }
+    
+    
+    public func parseOrders (data: [JSON]) -> [Order] {
+        var orders = [Order]()
+        for orderJson in data {
+            let order = Order()
+            if let id = orderJson["id"].int {
+                print("id " + String(id))
+                order.id = id
+                order.timeId = id
+            }
+            if let idTable = orderJson["table"].int {
+                print("idTable " + String(idTable))
+                order.idTable = idTable
+            }
+            if let cafeNumber = orderJson["number"].int {
+                print("cafeNumber " + String(cafeNumber))
+                order.cafeNumber = cafeNumber
+            }
+            if let status = orderJson["status"].int {
+                print("status " + String(status))
+                order.status = status
+            }
+            if let delay_flag = orderJson["delay_flag"].int {
+                print("delay_flag " + String(delay_flag))
+                order.delay_flag = delay_flag
+            }
+            if let time = orderJson["date"].string {
+                print("date " + String(time))
+                order.time = TimeInterval(time)!
+            }
+            order.cafe = GlobalConstants.user.cafe
+            orders.append(order)
+        }
+        return orders
     }
     
     
@@ -301,91 +251,29 @@ class JsonParser {
     }
     
     
-    public func parseDelay (JSONData: Data) -> [Statistic] {
+    public func parseDelays (data: [JSON]) -> [Statistic] {
         print ("parseDelay:")
-        var statistic = [Statistic]()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print (json)
-            if let error = json["error"] as? String {
-                print ("Ошибка: " + error)
-            } else {
-                if let statisticsJson = json["success"] as? [[String: Any]] {
-                    print (statisticsJson)
-                    for statisticJson in statisticsJson {
-                        let stat = Statistic()
-                        if let id = statisticJson["id"] as? Int {
-                            print("id " + String(id))
-                            stat.idWaiter = id
-                        }
-                        if let name = statisticJson["name"] as? String {
-                            print("name " + name)
-                            stat.name = name
-                        }
-                        if let count = statisticJson["count"] as? Int {
-                            print("count " + String(count))
-                            stat.count = count
-                        }
-                        statistic.append(stat)
-                    }
-                }
+        var statistics = [Statistic]()
+        for statisticJson in data {
+            let stat = Statistic()
+            if let id = statisticJson["id"].int {
+                print("id " + String(id))
+                stat.idWaiter = id
             }
-        } catch {
-            print(error)
+            if let name = statisticJson["name"].string {
+                print("name " + name)
+                stat.name = name
+            }
+            if let count = statisticJson["count"].int {
+                print("count " + String(count))
+                stat.count = count
+            }
+            statistics.append(stat)
         }
-        return statistic
+        return statistics
     }
     
     
-    public func parseOrder (JSONData: Data, cafe: Int) -> [Order] {
-        print ("parseOrder:")
-        var orders = [Order]()
-        do {
-            let json = try JSONSerialization.jsonObject(with: JSONData, options:.mutableContainers) as![String: Any]
-            
-            print (json)
-            if let error = json["error"] as? String {
-                print ("Ошибка: " + error)
-            } else {
-                if let ordersJson = json["success"] as? [[String: Any]] {
-                    print (ordersJson)
-                    for orderJson in ordersJson {
-                        let order = Order()
-                        if let id = orderJson["id"] as? Int {
-                            print("id " + String(id))
-                            order.id = id
-                            order.timeId = id
-                        }
-                        if let idTable = orderJson["table"] as? Int {
-                            print("idTable " + String(idTable))
-                            order.idTable = idTable
-                        }
-                        if let cafeNumber = orderJson["number"] as? Int {
-                            print("cafeNumber " + String(cafeNumber))
-                            order.cafeNumber = cafeNumber
-                        }
-                        if let status = orderJson["status"] as? Int {
-                            print("status " + String(status))
-                            order.status = status
-                        }
-                        if let delay_flag = orderJson["delay_flag"] as? Int {
-                            print("delay_flag " + String(delay_flag))
-                            order.delay_flag = delay_flag
-                        }
-                        if let time = orderJson["date"] as? String {
-                            print("date " + String(time))
-                            order.time = TimeInterval(time)!
-                        }
-                        order.cafe = cafe
-                        orders.append(order)
-                    }
-                }
-            }
-        } catch {
-            print(error)
-        }
-        return orders
-    }
+    
     
 }

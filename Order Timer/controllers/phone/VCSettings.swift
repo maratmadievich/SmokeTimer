@@ -21,16 +21,11 @@ class VCSettings: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var textFieldCountIterations: UITextField!
     @IBOutlet weak var textFieldOrderCount: UITextField!
     @IBOutlet weak var textFieldDelay: UITextField!
-    
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
-    
-    var user = User()
-    var settings = Settings()
-    
+
     
     override func viewWillAppear(_ animated: Bool) {
         getSettings()
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -78,24 +73,25 @@ class VCSettings: UIViewController, UITextFieldDelegate {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
-            print ("settings_url:\(urlString.getUrl())api/CafeDetailed")
-            print ("settings_params:\(parameters)")
-            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
-                if (self.settings.error.count > 0) {
-                    self.showAlertView(error: self.settings.error)
-                } else {
-                    self.textFieldStartOrder.text = String(self.settings.timeStartOrder)
-                    self.textFieldFiveMinutes.text = String(self.settings.timeFiveMinutes)
-                    self.textFieldWorkTimer.text = String(self.settings.timeWorkTimer)
-                    self.textFieldCountIterations.text = String(self.settings.countIterations)
-                    self.textFieldCountIterations.text = String(self.settings.countIterations)
-                    self.textFieldOrderCount.text = String(self.settings.maxOrder)
-                    self.textFieldDelay.text = String(self.settings.maxDelay)
-                }
-            }
+            GlobalConstants.alamofireResponse.getSettings(delegate: self)
+//            let parameters = ["api_token":  self.user.token, "cafe":String(self.user.cafe)]
+//            print ("settings_url:\(urlString.getUrl())api/CafeDetailed")
+//            print ("settings_params:\(parameters)")
+//            request(urlString.getUrl() + "api/CafeDetailed", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.settings = self.jsonParser.parseSettings(JSONData: response.data!, cafe: self.user.cafe)
+//                if (self.settings.error.count > 0) {
+//                    self.showAlertView(error: self.settings.error)
+//                } else {
+//                    self.textFieldStartOrder.text = String(self.settings.timeStartOrder)
+//                    self.textFieldFiveMinutes.text = String(self.settings.timeFiveMinutes)
+//                    self.textFieldWorkTimer.text = String(self.settings.timeWorkTimer)
+//                    self.textFieldCountIterations.text = String(self.settings.countIterations)
+//                    self.textFieldCountIterations.text = String(self.settings.countIterations)
+//                    self.textFieldOrderCount.text = String(self.settings.maxOrder)
+//                    self.textFieldDelay.text = String(self.settings.maxDelay)
+//                }
+//            }
         }
     }
     
@@ -104,24 +100,27 @@ class VCSettings: UIViewController, UITextFieldDelegate {
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            let parameters = ["api_token":  self.user.token,
-                              "cafe": String(self.user.cafe),
-                              "order_timer": textFieldStartOrder.text!,
-                              "minutes_timer":  textFieldFiveMinutes.text!,
-                              "work_timer":  textFieldWorkTimer.text!,
-                              "timer_count":  textFieldCountIterations.text!,
-                              "max_order":  textFieldOrderCount.text!,
-                              "max_delay":  textFieldDelay.text!]
-            request(urlString.getUrl() + "api/CafeUpdate", method: .post, parameters: parameters).responseJSON {
-                response in
-                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
-                if (response.isError) {
-                    self.showAlertView(error: response.text)
-                } else {
-//                    self.gotoSegue()
-                    self.showAlertView(error: "Сохранение прошло успешно")
-                }
-            }
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
+            parameters["order_timer"] = textFieldStartOrder.text!
+            parameters["minutes_timer"] = textFieldFiveMinutes.text!
+            parameters["work_timer"] = textFieldWorkTimer.text!
+            parameters["timer_count"] = textFieldCountIterations.text!
+            parameters["max_order"] = textFieldOrderCount.text!
+            parameters["max_delay"] = textFieldDelay.text!
+            GlobalConstants.alamofireResponse.saveSettings(parameters: parameters, delegate: self)
+            
+//            request(urlString.getUrl() + "api/CafeUpdate", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                let response = self.jsonParser.parseEditDelete(JSONData: response.data!)
+//                if (response.isError) {
+//                    self.showAlertView(error: response.text)
+//                } else {
+////                    self.gotoSegue()
+//                    self.showAlertView(error: "Сохранение прошло успешно")
+//                }
+//            }
         }
     }
     
@@ -165,11 +164,6 @@ class VCSettings: UIViewController, UITextFieldDelegate {
     
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if (segue.identifier == "showWaiters") {
-            let vc = segue.destination as! VCWaiters
-            vc.user = self.user
-            vc.settings = self.settings
-        }
         let backItem = UIBarButtonItem()
         backItem.title = "Назад"
         navigationItem.backBarButtonItem = backItem
@@ -197,3 +191,33 @@ class VCSettings: UIViewController, UITextFieldDelegate {
     }
 
 }
+
+extension VCSettings: BackEndSettingsProtocol {
+    
+    func returnUpdateSuccess() {
+        showAlertView(error: "Изменение прошло успешно")
+    }
+    
+    
+    func returnSettingsSuccess() {
+        self.textFieldStartOrder.text = String(GlobalConstants.settings.timeStartOrder)
+        self.textFieldFiveMinutes.text = String(GlobalConstants.settings.timeFiveMinutes)
+        self.textFieldWorkTimer.text = String(GlobalConstants.settings.timeWorkTimer)
+        self.textFieldCountIterations.text = String(GlobalConstants.settings.countIterations)
+        self.textFieldCountIterations.text = String(GlobalConstants.settings.countIterations)
+        self.textFieldOrderCount.text = String(GlobalConstants.settings.maxOrder)
+        self.textFieldDelay.text = String(GlobalConstants.settings.maxDelay)
+    }
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+    }
+    
+    
+}
+
+
+
+
+
+

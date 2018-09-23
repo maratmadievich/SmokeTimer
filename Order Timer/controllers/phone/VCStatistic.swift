@@ -21,18 +21,17 @@ class VCStatistic: UIViewController, UITableViewDelegate, UITableViewDataSource,
     @IBOutlet weak var btnShowFilter: UIBarButtonItem!
     
     @IBOutlet weak var fsCalendar: FSCalendar!
-    
-    let urlString = UrlString()
-    let jsonParser = JsonParser()
+
     
     var isShowFilter = false
-    var user = User()
+    
     var statistic = [Statistic]()
     
     
     override func viewWillAppear(_ animated: Bool) {
         self.viewFilter.center.x  -= view.bounds.width
         getStatistic()
+        GlobalConstants.currentViewController = self
     }
     
     
@@ -89,20 +88,21 @@ class VCStatistic: UIViewController, UITableViewDelegate, UITableViewDataSource,
         if (!Connectivity.isConnectedToInternet) {
             showAlertView(error: "Отсутствует соедиенение с Интернетом")
         } else {
-            var parameters = [String: String]()
-            parameters["api_token"] = self.user.token
-            parameters["cafe"] = String(self.user.cafe)
+            var parameters = Parameters()
+            parameters["api_token"] = GlobalConstants.user.token
+            parameters["cafe"] = GlobalConstants.user.cafe
             if (fsCalendar.selectedDates.count == 1) {
-                 parameters["date_from"] = String(describing: (fsCalendar.selectedDates[0].timeIntervalSince1970))
+                 parameters["date_from"] = fsCalendar.selectedDates[0].timeIntervalSince1970
             } else if (fsCalendar.selectedDates.count > 1)  {
-                parameters["date_from"] = String(describing: (self.getMinDate().timeIntervalSince1970))
-                parameters["date_to"] = String(describing: (self.getMaxDate().timeIntervalSince1970))
+                parameters["date_from"] = self.getMinDate().timeIntervalSince1970
+                parameters["date_to"] = self.getMaxDate().timeIntervalSince1970
             }
-            request(urlString.getUrl() + "api/CafeDelay", method: .post, parameters: parameters).responseJSON {
-                response in
-                self.statistic = self.jsonParser.parseDelay(JSONData: response.data!)
-                self.tableView.reloadData()
-            }
+            GlobalConstants.alamofireResponse.getDelays(parameters: parameters, delegate: self)
+//            request(urlString.getUrl() + "api/CafeDelay", method: .post, parameters: parameters).responseJSON {
+//                response in
+//                self.statistic = self.jsonParser.parseDelay(JSONData: response.data!)
+//                self.tableView.reloadData()
+//            }
         }
     }
     
@@ -165,5 +165,20 @@ class VCStatistic: UIViewController, UITableViewDelegate, UITableViewDataSource,
         }
     }
 
+}
 
+extension VCStatistic: BackEndDelaysProtocol {
+    
+    func returnMy(delays: [Statistic]) {
+        self.statistic = delays
+        self.tableView.reloadData()
+    }
+    
+    func returnAdd(delay: Delay) {}
+    
+    func returnError(error: String) {
+        showAlertView(error: error)
+    }
+    
+    
 }
